@@ -1,6 +1,5 @@
 const {getDb, simpleCurd} = require('./db');
 
-
 module.exports = simpleCurd('books');
 
 let requiredFields = ['name'],

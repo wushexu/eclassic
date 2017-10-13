@@ -1,6 +1,6 @@
 let testSuit = require('./helper/rest');
 
-describe('chap CRUD',
+describe('user CRUD',
     testSuit('user',
-        {name: 'test021q', pass: '111222', gender: 'F'},
+        {name: 'test099', pass: '111222', gender: 'F'},
         {gender: 'F', role: 'gen'}));

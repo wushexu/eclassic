@@ -1,5 +1,8 @@
 let {extractFields, sendError, sendMgResult} = require('../../helper/helper');
 
+const sequenceInterval=10;
+const sequenceSeed=1000;
+
 function maxNo(Model, filter) {
     return Model.coll()
         .findOne(filter, {
@@ -7,7 +10,7 @@ function maxNo(Model, filter) {
             sort: {no: -1}
         }).then(
             function (last) {
-                let max = 1000;
+                let max = sequenceSeed;
                 if (last && last.no) {
                     max = last.no;
                 }
@@ -25,7 +28,7 @@ function minNo(Model, filter) {
             sort: {no: 1}
         }).then(
             function (first) {
-                let min = 1000;
+                let min = sequenceSeed;
                 if (first && first.no) {
                     min = first.no;
                 }
@@ -116,7 +119,7 @@ function sortable(Model, scopeField) {
                     //     res.send({ok: 1});
                     //     return;
                     // }
-                    updateNo(m._id, no - 10, res, eh);
+                    updateNo(m._id, no - sequenceInterval, res, eh);
                 }, eh).catch(eh);
         }, eh).catch(eh);
     }
@@ -132,7 +135,7 @@ function sortable(Model, scopeField) {
                     //     res.send({ok: 1});
                     //     return;
                     // }
-                    updateNo(m._id, no + 10, res, eh);
+                    updateNo(m._id, no + sequenceInterval, res, eh);
                 }, eh).catch(eh);
         }, eh).catch(eh);
     }
@@ -165,7 +168,7 @@ function sortable(Model, scopeField) {
             filter.no = {$gte: target.no};
             Model.coll().updateMany(
                 filter,
-                {$inc: {no: 10}})
+                {$inc: {no: sequenceInterval}})
                 .then(
                     thenCreateModel(nm, res, eh),
                     eh).catch(eh);
@@ -180,13 +183,13 @@ function sortable(Model, scopeField) {
             if (scopeField) {
                 nm[scopeField] = target[scopeField];
             }
-            nm.no = target.no + 10;
+            nm.no = target.no + sequenceInterval;
 
             let filter = scope(target);
             filter.no = {$gt: target.no};
             Model.coll().updateMany(
                 filter,
-                {$inc: {no: 10}})
+                {$inc: {no: sequenceInterval}})
                 .then(
                     thenCreateModel(nm, res, eh),
                     eh).catch(eh);
@@ -208,4 +211,39 @@ function sort(router, actions) {
 }
 
 
-module.exports = {maxNo, sortable, sort};
+function childResource(ChildModel, scopeField) {
+
+    function list(req, res, next) {
+        let eh = sendError(req, res);
+
+        ChildModel.coll()
+            .find({[scopeField]: req.params._id})
+            .sort({no: 1})
+            .toArray()
+            .then(
+                res.send.bind(res),
+                eh)
+            .catch(eh);
+    }
+
+    function create(req, res, next) {
+        let eh = sendError(req, res);
+
+        let m = extractFields(req, ChildModel.fields.createFields);
+
+        maxNo(ChildModel, {[scopeField]: m[scopeField]})
+            .then(function (no) {
+                m.no = no + sequenceInterval;
+                ChildModel.create(m).then(
+                    (r) => {
+                        res.send(m);
+                    },
+                    eh).catch(eh);
+            }, eh).catch(eh);
+    }
+
+    return {list, create};
+}
+
+
+module.exports = {maxNo, sortable, sort, childResource};

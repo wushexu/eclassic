@@ -1,3 +1,6 @@
+let debug = require('debug')('cr:m');
+let stringify = require('stringify-object');
+
 function emptyObject(obj) {
     if (typeof obj !== 'object') {
         return true;
@@ -63,7 +66,7 @@ function sendMgResult(res) {
         if (r.result) {
             r = r.result;
         }
-        console.log("Mongo Result: " + r);
+        debug(`Mongo Result: ${stringify(r)}`);
         res.send({ok: r.ok});
     };
 }

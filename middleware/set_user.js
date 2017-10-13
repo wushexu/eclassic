@@ -9,6 +9,7 @@ module.exports = (req, res, next) => {
     let eh = sendError(req, res);
     User.getById(uid).then(
         (user) => {
+            console.log("User: "+user.name);
             req.user = res.locals.user = user;
             next();
         },

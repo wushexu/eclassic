@@ -18,7 +18,8 @@ let index = require('./routes/index');
 let login = require('./routes/login');
 let users = require('./routes/users');
 let books = require('./routes/books');
-let chapters = require('./routes/chaps');
+let chaps = require('./routes/chaps');
+let paras = require('./routes/paras');
 
 let app = express();
 
@@ -56,7 +57,8 @@ app.use('/', index);
 app.use('/login', login);
 app.use('/users', users);
 app.use('/books', books);
-app.use('/chaps', chapters);
+app.use('/chaps', chaps);
+app.use('/paras', paras);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

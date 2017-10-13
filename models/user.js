@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const {getDb, simpleCurd} = require('./db');
+const {simpleCurd} = require('./db');
 
 let {
     coll,
@@ -52,6 +52,7 @@ let requiredFields = ['name', 'pass'],
     createFields = requiredFields.concat(updateFields);
 
 module.exports = {
+    coll,
     find,
     exists,
     getById,
