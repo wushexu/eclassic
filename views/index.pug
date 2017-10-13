@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1 CR
+  p Welcome to CR
+    if user
+      p= user.name
+      form(action="/login" method="post")
+        p
+          input(type='hidden', name='_method', value='DELETE')
+          input(type="submit" value="Logout")
+    else
+      p
+        a(href="login")
+          | Login

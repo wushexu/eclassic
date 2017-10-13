@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 Login
+  p
+    if message
+      = message
+    form(action="" method="post")
+      p
+        input(type="text" name="name" value="zzz" placeholder="Username")
+      p
+        input(type="password" name="pass" value="hh" placeholder="Password")
+      p
+        input(type="submit" value="Login")
