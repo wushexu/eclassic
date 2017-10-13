@@ -66,7 +66,7 @@ function sendMgResult(res) {
         if (r.result) {
             r = r.result;
         }
-        debug(`Mongo Result: ${stringify(r)}`);
+        console.log('Mongo Result: ' + stringify(r));
         res.send({ok: r.ok});
     };
 }

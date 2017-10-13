@@ -81,7 +81,7 @@ function sortable(Model, scopeField) {
                         sendMgResult(res),
                         eh).catch(eh);
                 } else {
-                    res.send({ok: 1});
+                    res.send({ok: 0});
                 }
             }, eh).catch(eh);
         }, eh).catch(eh);
@@ -102,7 +102,7 @@ function sortable(Model, scopeField) {
                         sendMgResult(res),
                         eh).catch(eh);
                 } else {
-                    res.send({ok: 1});
+                    res.send({ok: 0});
                 }
             }, eh).catch(eh);
         }, eh).catch(eh);
@@ -115,10 +115,6 @@ function sortable(Model, scopeField) {
             let filter = scope(m);
             minNo(Model, filter)
                 .then(function (no) {
-                    // if (m.no === no) {
-                    //     res.send({ok: 1});
-                    //     return;
-                    // }
                     updateNo(m._id, no - sequenceInterval, res, eh);
                 }, eh).catch(eh);
         }, eh).catch(eh);
@@ -131,10 +127,6 @@ function sortable(Model, scopeField) {
             let filter = scope(m);
             maxNo(Model, filter)
                 .then(function (no) {
-                    // if (m.no === no) {
-                    //     res.send({ok: 1});
-                    //     return;
-                    // }
                     updateNo(m._id, no + sequenceInterval, res, eh);
                 }, eh).catch(eh);
         }, eh).catch(eh);

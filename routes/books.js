@@ -5,7 +5,6 @@ let restful = require('./helper/rest');
 let sorter = require('./helper/sorter');
 let Book = require('../models/book');
 let Chap = require('../models/chap');
-let {extractFields, sendError} = require('../helper/helper');
 
 let handles = restful.simpleHandles(Book);
 
