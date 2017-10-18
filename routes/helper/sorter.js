@@ -1,42 +1,32 @@
-let {extractFields, sendError, sendMgResult} = require('../../helper/helper');
+let {extractFields, sendMgResult} = require('../../helper/helper');
 
-const sequenceInterval=10;
-const sequenceSeed=1000;
+const sequenceInterval = 10;
+const sequenceSeed = 1000;
 
-function maxNo(Model, filter) {
-    return Model.coll()
+async function maxNo(Model, filter) {
+    let last = await Model.coll()
         .findOne(filter, {
             fields: {no: 1},
             sort: {no: -1}
-        }).then(
-            function (last) {
-                let max = sequenceSeed;
-                if (last && last.no) {
-                    max = last.no;
-                }
-                return new Promise(function (resolve, reject) {
-                    resolve(max);
-                });
-            },
-            console.err);
+        });
+    let max = sequenceSeed;
+    if (last && last.no) {
+        max = last.no;
+    }
+    return max;
 }
 
-function minNo(Model, filter) {
-    return Model.coll()
+async function minNo(Model, filter) {
+    let first = await Model.coll()
         .findOne(filter, {
             fields: {no: 1},
             sort: {no: 1}
-        }).then(
-            function (first) {
-                let min = sequenceSeed;
-                if (first && first.no) {
-                    min = first.no;
-                }
-                return new Promise(function (resolve, reject) {
-                    resolve(min);
-                });
-            },
-            console.err);
+        });
+    let min = sequenceSeed;
+    if (first && first.no) {
+        min = first.no;
+    }
+    return min;
 }
 
 
@@ -50,13 +40,6 @@ function sortable(Model, scopeField) {
         return s;
     }
 
-
-    function updateNo(id, no, res, eh) {
-        Model.update(id, {no}).then(
-            sendMgResult(res),
-            eh).catch(eh);
-    }
-
     function swapNo(m1, m2) {
         return Model.coll().bulkWrite([
             {updateOne: {filter: {_id: m1._id}, update: {$set: {no: m2.no}}}},
@@ -66,126 +49,104 @@ function sortable(Model, scopeField) {
 
     // *************
 
-    function moveUp(req, res, next) {
-        let eh = sendError(req, res);
+    async function moveUp(req, res, next) {
 
-        Model.getById(req.params._id).then(function (m) {
-            let filter = scope(m);
-            filter.no = {$lt: m.no};
-            Model.coll().findOne(filter, {
-                fields: {no: 1},
-                sort: {no: -1}
-            }).then(function (adjacent) {
-                if (adjacent) {
-                    swapNo(m, adjacent).then(
-                        sendMgResult(res),
-                        eh).catch(eh);
-                } else {
-                    res.send({ok: 0});
-                }
-            }, eh).catch(eh);
-        }, eh).catch(eh);
+        let m = await Model.getById(req.params._id);
+        let filter = scope(m);
+        filter.no = {$lt: m.no};
+        let adjacent = await Model.coll().findOne(filter, {
+            fields: {no: 1},
+            sort: {no: -1}
+        });
+        if (adjacent) {
+            let r = await swapNo(m, adjacent);
+            sendMgResult(res, r);
+        } else {
+            res.send({ok: 0});
+        }
     }
 
-    function moveDown(req, res, next) {
-        let eh = sendError(req, res);
+    async function moveDown(req, res, next) {
 
-        Model.getById(req.params._id).then(function (m) {
-            let filter = scope(m);
-            filter.no = {$gt: m.no};
-            Model.coll().findOne(filter, {
-                fields: {no: 1},
-                sort: {no: 1}
-            }).then(function (adjacent) {
-                if (adjacent) {
-                    swapNo(m, adjacent).then(
-                        sendMgResult(res),
-                        eh).catch(eh);
-                } else {
-                    res.send({ok: 0});
-                }
-            }, eh).catch(eh);
-        }, eh).catch(eh);
+        let m = Model.getById(req.params._id);
+        let filter = scope(m);
+        filter.no = {$gt: m.no};
+        let adjacent = await Model.coll().findOne(filter, {
+            fields: {no: 1},
+            sort: {no: 1}
+        });
+        if (adjacent) {
+            let r = await swapNo(m, adjacent);
+            sendMgResult(res, r);
+        } else {
+            res.send({ok: 0});
+        }
     }
 
-    function moveTop(req, res, next) {
-        let eh = sendError(req, res);
+    async function moveTop(req, res, next) {
 
-        Model.getById(req.params._id).then(function (m) {
-            let filter = scope(m);
-            minNo(Model, filter)
-                .then(function (no) {
-                    updateNo(m._id, no - sequenceInterval, res, eh);
-                }, eh).catch(eh);
-        }, eh).catch(eh);
+        let m = await Model.getById(req.params._id);
+        let filter = scope(m);
+        let no = minNo(Model, filter);
+        no -= sequenceInterval;
+        let r = await Model.update(m._id, {no});
+        sendMgResult(res, r);
     }
 
-    function moveBottom(req, res, next) {
-        let eh = sendError(req, res);
+    async function moveBottom(req, res, next) {
 
-        Model.getById(req.params._id).then(function (m) {
-            let filter = scope(m);
-            maxNo(Model, filter)
-                .then(function (no) {
-                    updateNo(m._id, no + sequenceInterval, res, eh);
-                }, eh).catch(eh);
-        }, eh).catch(eh);
+        let m = await Model.getById(req.params._id);
+        let filter = scope(m);
+        let no = maxNo(Model, filter);
+        no += sequenceInterval;
+        let r = await Model.update(m._id, {no});
+        sendMgResult(res, r);
     }
 
-    function thenCreateModel(nm, res, eh) {
-        return function (r) {
-            if (r && r.result && r.result.ok === 1) {
-                Model.create(nm).then(
-                    (r) => {
-                        res.send(nm);
-                    },
-                    eh).catch(eh);
-            } else {
-                res.send({ok: 0});
-            }
-        };
-    }
-
-    function createBefore(req, res, next) {
-        let eh = sendError(req, res);
+    async function createBefore(req, res, next) {
         let nm = extractFields(req, Model.fields.createFields);
 
-        Model.getById(req.params._id).then(function (target) {
-            if (scopeField) {
-                nm[scopeField] = target[scopeField];
-            }
-            nm.no = target.no;
+        let target = await Model.getById(req.params._id);
+        if (scopeField) {
+            nm[scopeField] = target[scopeField];
+        }
+        nm.no = target.no;
 
-            let filter = scope(target);
-            filter.no = {$gte: target.no};
-            Model.coll().updateMany(
-                filter,
-                {$inc: {no: sequenceInterval}})
-                .then(
-                    thenCreateModel(nm, res, eh),
-                    eh).catch(eh);
-        }, eh).catch(eh);
+        let filter = scope(target);
+        filter.no = {$gte: target.no};
+        let r = await Model.coll().updateMany(
+            filter,
+            {$inc: {no: sequenceInterval}});
+
+        if (r && r.result && r.result.ok === 1) {
+            let cr = await Model.create(nm);
+            res.send(cr);
+        } else {
+            res.send({ok: 0});
+        }
     }
 
-    function createAfter(req, res, next) {
-        let eh = sendError(req, res);
+    async function createAfter(req, res, next) {
         let nm = extractFields(req, Model.fields.createFields);
 
-        Model.getById(req.params._id).then(function (target) {
-            if (scopeField) {
-                nm[scopeField] = target[scopeField];
-            }
-            nm.no = target.no + sequenceInterval;
+        let target = await Model.getById(req.params._id);
+        if (scopeField) {
+            nm[scopeField] = target[scopeField];
+        }
+        nm.no = target.no + sequenceInterval;
 
-            let filter = scope(target);
-            filter.no = {$gt: target.no};
-            Model.coll().updateMany(
-                filter,
-                {$inc: {no: sequenceInterval}})
-                .then(
-                    thenCreateModel(nm, res, eh),
-                    eh).catch(eh);
-        }, eh).catch(eh);
+        let filter = scope(target);
+        filter.no = {$gt: target.no};
+        let r = await  Model.coll().updateMany(
+            filter,
+            {$inc: {no: sequenceInterval}});
+
+        if (r && r.result && r.result.ok === 1) {
+            let cr = await Model.create(nm);
+            res.send(cr);
+        } else {
+            res.send({ok: 0});
+        }
     }
 
     return {
@@ -205,33 +166,23 @@ function sort(router, actions) {
 
 function childResource(ChildModel, scopeField) {
 
-    function list(req, res, next) {
-        let eh = sendError(req, res);
+    async function list(req, res, next) {
 
-        ChildModel.coll()
+        let ms = await ChildModel.coll()
             .find({[scopeField]: req.params._id})
             .sort({no: 1})
-            .toArray()
-            .then(
-                res.send.bind(res),
-                eh)
-            .catch(eh);
+            .toArray();
+        res.send(ms);
     }
 
-    function create(req, res, next) {
-        let eh = sendError(req, res);
+    async function create(req, res, next) {
 
         let m = extractFields(req, ChildModel.fields.createFields);
 
-        maxNo(ChildModel, {[scopeField]: m[scopeField]})
-            .then(function (no) {
-                m.no = no + sequenceInterval;
-                ChildModel.create(m).then(
-                    (r) => {
-                        res.send(m);
-                    },
-                    eh).catch(eh);
-            }, eh).catch(eh);
+        let no = await maxNo(ChildModel, {[scopeField]: m[scopeField]});
+        m.no = no + sequenceInterval;
+        let r = await ChildModel.create(m);
+        res.send(m);
     }
 
     return {list, create};

@@ -1,89 +1,93 @@
 let express = require('express');
 let router = express.Router();
 
-let {sendError, sendMgResult} = require('../helper/helper');
+let {sendMgResult} = require('../helper/helper');
 let restful = require('./helper/rest');
 let sorter = require('./helper/sorter');
 let Para = require('../models/para');
 
-const LF='\n';
+const LF = '\n';
 
-function saveMerging(source, target, res, eh) {
+async function saveMerging(source, target, res) {
 
-    Para.coll().bulkWrite([
-            {
-                updateOne: {
-                    filter: {_id: target._id},
-                    update: {$set: {content: target.content, trans: target.trans}}
-                }
-            },
-            {deleteOne: {filter: {_id: source._id}}}
-        ])
-        .then(sendMgResult(res), eh).catch(eh)
+    let r = await Para.coll().bulkWrite([
+        {
+            updateOne: {
+                filter: {_id: target._id},
+                update: {$set: {content: target.content, trans: target.trans}}
+            }
+        },
+        {deleteOne: {filter: {_id: source._id}}}
+    ]);
+    sendMgResult(res, r);
 }
 
-function mergeUp(req, res, next) {
-    let eh = sendError(req, res);
+async function mergeUp(req, res, next) {
 
-    Para.getById(req.params._id).then(function (source) {
-        if (!source) {
-            res.send({ok: 0});
-            return;
-        }
-        Para.coll().findOne({chapId: source.chapId, no: {$lt: source.no}}, {
+    let source = await Para.getById(req.params._id);
+    if (!source) {
+        res.send({ok: 0});
+        return;
+    }
+    let target = await Para.coll()
+        .findOne({
+            chapId: source.chapId,
+            no: {$lt: source.no}
+        }, {
             sort: {no: -1}
-        }).then(function (target) {
-            if (!target) {
-                res.send({ok: 0});
-                return;
-            }
-            let {content, trans} = target;
-            content = content + LF + source.content;
-            target.content = content;
-            if (trans || source.trans) {
-                if (!trans) {
-                    trans = source.trans;
-                } else if (source.trans) {
-                    trans = trans + LF + source.trans;
-                }
-                target.trans = trans;
-            }
+        });
+    if (!target) {
+        res.send({ok: 0});
+        return;
+    }
 
-            saveMerging(source, target, res, eh);
-        }, eh).catch(eh);
-    }, eh).catch(eh);
+    let {content, trans} = target;
+    content = content + LF + source.content;
+    target.content = content;
+    if (trans || source.trans) {
+        if (!trans) {
+            trans = source.trans;
+        } else if (source.trans) {
+            trans = trans + LF + source.trans;
+        }
+        target.trans = trans;
+    }
+
+    saveMerging(source, target, res);
 }
 
-function mergeDown(req, res, next) {
-    let eh = sendError(req, res);
+async function mergeDown(req, res, next) {
 
-    Para.getById(req.params._id).then(function (source) {
-        if (!source) {
-            res.send({ok: 0});
-            return;
-        }
-        Para.coll().findOne({chapId: source.chapId, no: {$gt: source.no}}, {
+    let source = await Para.getById(req.params._id);
+    if (!source) {
+        res.send({ok: 0});
+        return;
+    }
+    let target = await Para.coll()
+        .findOne({
+            chapId: source.chapId,
+            no: {$gt: source.no}
+        }, {
             sort: {no: 1}
-        }).then(function (target) {
-            if (!target) {
-                res.send({ok: 0});
-                return;
-            }
-            let {content, trans} = target;
-            content = source.content + LF + content;
-            target.content = content;
-            if (trans || source.trans) {
-                if (!trans) {
-                    trans = source.trans;
-                } else if (source.trans) {
-                    trans = source.trans + LF + trans;
-                }
-                target.trans = trans;
-            }
+        });
+    if (!target) {
+        res.send({ok: 0});
+        return;
+    }
 
-            saveMerging(source, target, res, eh);
-        }, eh).catch(eh);
-    }, eh).catch(eh);
+    let {content, trans} = target;
+    content = source.content + LF + content;
+    target.content = content;
+    if (trans || source.trans) {
+        if (!trans) {
+            trans = source.trans;
+        } else if (source.trans) {
+            trans = source.trans + LF + trans;
+        }
+        target.trans = trans;
+    }
+
+    saveMerging(source, target, res);
 }
 
 

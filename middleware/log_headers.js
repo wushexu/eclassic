@@ -1,10 +1,9 @@
 let debug = require('debug')('cr:headers');
-let stringify = require('stringify-object');
 
 module.exports = (req, res, next) => {
-    debug(stringify(req.headers));
+    debug(JSON.stringify(req.headers,null,2));
     // req.headers.forEach((h)=>{
-    //     debug(stringify(h));
+    //     debug(JSON.stringify(h));
     // });
     next();
 };

@@ -23,7 +23,7 @@ function checkExists(req, res, next) {
         }
     };
     User.exists({name})
-        .then(hd, sendError(req, res))
+        .then(hd)
         .catch(sendError(req, res));
 }
 
@@ -36,7 +36,7 @@ router.all('/find', (req, res, next) => {
     User.find(pairs)
         .then((users) => {
             res.send(users);
-        }, sendError(req, res))
+        })
         .catch(sendError(req, res));
 });
 

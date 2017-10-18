@@ -1,6 +1,5 @@
 let express = require('express');
 let session = require('express-session');
-let flash = require('connect-flash-plus');
 let methodOverride = require('method-override');
 let path = require('path');
 let favicon = require('serve-favicon');
@@ -9,6 +8,7 @@ let logger = require('morgan');
 let bodyParser = require('body-parser');
 let {sendError} = require('./helper/helper');
 
+let cors = require('./middleware/cors');
 let log_headers = require('./middleware/log_headers');
 let log_params = require('./middleware/log_params');
 let connect_db = require('./middleware/connect_db');
@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 //app.use(cookieParser());
 app.use(session({secret: 'qaz234', resave: false, saveUninitialized: true}));
-app.use(flash());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(methodOverride('_method'));
 app.use(methodOverride(function (req, res) {
@@ -46,19 +46,21 @@ app.use(methodOverride(function (req, res) {
     }
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
-
-//app.use(log_headers);
+app.use(log_headers);
 app.use(log_params);
 app.use(connect_db);
 app.use(set_user);
+app.use(cors);
 
-app.use('/', index);
-app.use('/login', login);
-app.use('/users', users);
-app.use('/books', books);
-app.use('/chaps', chaps);
-app.use('/paras', paras);
+let api = express();
+app.use('/api', api);
+
+api.use('/', index);
+api.use('/login', login);
+api.use('/users', users);
+api.use('/books', books);
+api.use('/chaps', chaps);
+api.use('/paras', paras);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,17 +1,12 @@
 let express = require('express');
 let router = express.Router();
-let debug = require('debug')('cr:session');
-let stringify = require('stringify-object');
+// let debug = require('debug')('cr:session');
 
 const validate = require('../middleware/validate');
 
 const User = require('../models/user');
 
-router.get('/', (req, res) => {
-    // let message=req.flash('message');
-    // if(message){
-    //     res.locals.message=message;
-    // }
+router.get('/form', (req, res) => {
     res.render('login');
 });
 
@@ -28,54 +23,39 @@ function doLogin(req, res, user) {
                 }
             },
             html: () => {
-                res.redirect('/');
+                res.redirect('/api/f');
             }
         });
-        //debug(stringify(req.headers));
     });
+}
+
+async function login(req, res, next) {
+
+    const {name, pass} = req.body;
+    let user = await User.authenticate(name, pass);
+    if (user) {
+        doLogin(req, res, user);
+    } else {
+        let message = 'Sorry! invalid credentials.';
+        res.format({
+            json: () => {
+                res.send({ok: 0, message: message});
+            },
+            html: () => {
+                res.locals.message = message;
+                res.render('login');
+            }
+        });
+    }
 }
 
 // Login
 router.post('/',
     validate.required(['name', 'pass']),
-    (req, res, next) => {
-        const {name, pass} = req.body;
-        User.authenticate(name, pass).then(
-            (user) => {
-                if (user) {
-                    doLogin(req, res, user);
-                } else {
-                    let message = 'Sorry! invalid credentials.';
-                    res.format({
-                        json: () => {
-                            res.send({ok: 0, message: message});
-                        },
-                        html: () => {
-                            res.locals.message = message;
-                            res.render('login');
-                        }
-                    });
-                }
-            },
-            (err) => {
-                console.err(err);
-                let message = 'Login failed.';
-                res.format({
-                    json: () => {
-                        res.send({ok: 0, message: message});
-                    },
-                    html: () => {
-                        res.locals.message = message;
-                        res.render('login');
-                    }
-                });
-            }
-        );
-    }
+    login
 );
 
 router.delete('/', (req, res) => {
-    console.log("user exit ...");
     req.session.destroy((err) => {
         if (err) console.error("err:" + err);
         res.format({
@@ -87,7 +67,7 @@ router.delete('/', (req, res) => {
                 }
             },
             html: () => {
-                res.redirect('/');
+                res.redirect('/api/f');
             }
         });
     });

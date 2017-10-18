@@ -1,5 +1,4 @@
-let debug = require('debug')('cr:m');
-let stringify = require('stringify-object');
+// let debug = require('debug')('cr:m');
 
 function emptyObject(obj) {
     if (typeof obj !== 'object') {
@@ -61,21 +60,18 @@ function sendError(req, res) {
     };
 }
 
-function sendMgResult(res) {
-    return (r) => {
-        if (r.result) {
-            r = r.result;
-        }
-        console.log('Mongo Result: ' + stringify(r));
-        res.send({ok: r.ok});
-    };
+function sendMgResult(res,r) {
+    if (r.result) {
+        r = r.result;
+    }
+    console.log('Mongo Result: ' + JSON.stringify(r));
+    res.send({ok: r.ok});
 }
 
 module.exports = {
     reqParam,
     extractFields,
     emptyObject,
-    simpleReject,
     sendError,
     sendMgResult
 };

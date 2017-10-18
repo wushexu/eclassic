@@ -1,5 +1,5 @@
 const {MongoClient, ObjectID} = require('mongodb');
-let {emptyObject, simpleReject} = require('../helper/helper');
+let {emptyObject} = require('../helper/helper');
 
 let db;
 
@@ -8,7 +8,7 @@ module.exports.connectDb = () => {
         .connect('mongodb://localhost:27017/articles')
         .then((cli) => {
             db = cli;
-        }, simpleReject);
+        });
 };
 
 module.exports.getDb = () => {
@@ -25,12 +25,9 @@ module.exports.simpleCurd = (collectionName) => {
         return coll().find(criteria).toArray();
     }
 
-    function exists(criteria) {
-        return coll().findOne(criteria, {_id: 1}).then((m) => {
-            return new Promise(function (resolve, reject) {
-                return resolve(!!m);
-            });
-        }, simpleReject);
+    async function exists(criteria) {
+        let m = await coll().findOne(criteria, {_id: 1});
+        return !!m;
     }
 
     function getById(_id) {

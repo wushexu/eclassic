@@ -1,4 +1,4 @@
-const {extractFields, sendError, sendMgResult} = require('../../helper/helper');
+const {extractFields, sendMgResult} = require('../../helper/helper');
 const validate = require('../../middleware/validate');
 
 function simpleHandles(Model) {
@@ -7,49 +7,37 @@ function simpleHandles(Model) {
 
     let sortable = createFields.indexOf('no') >= 0;
 
-    function index(req, res, next) {
-        let eh = sendError(req, res);
+    async function index(req, res, next) {
 
         let p = Model.coll().find();
         if (sortable) {
             p = p.sort({no: 1});
         }
-        p.toArray().then(
-            res.send.bind(res),
-            eh).catch(eh);
+        let ms=await p.toArray();
+        res.send(ms);
     }
 
-    function create(req, res, next) {
-        let eh = sendError(req, res);
+    async function create(req, res, next) {
         let m = extractFields(req, createFields);
-        Model.create(m).then(
-            (r) => {
-                res.send(m);
-            },
-            eh).catch(eh);
+        await Model.create(m);
+        res.send(m);
     }
 
-    function show(req, res, next) {
-        let eh = sendError(req, res);
+    async function show(req, res, next) {
         let _id = req.params._id;
-        Model.getById(_id).then(
-            res.send.bind(res),
-            eh).catch(eh);
+        let m=await Model.getById(_id);
+        res.send(m);
     }
 
-    function update(req, res, next) {
-        let eh = sendError(req, res);
+    async function update(req, res, next) {
         let m = extractFields(req, updateFields);
-        Model.update(req.params._id, m).then(
-            sendMgResult(res),
-            eh).catch(eh);
+        let r=await Model.update(req.params._id, m);
+        sendMgResult(res,r);
     }
 
-    function destroy(req, res, next) {
-        let eh = sendError(req, res);
-        Model.remove(req.params._id).then(
-            sendMgResult(res),
-            eh).catch(eh);
+    async function destroy(req, res, next) {
+        let r=await Model.remove(req.params._id);
+        sendMgResult(res,r);
     }
 
     if (requiredFields) {
