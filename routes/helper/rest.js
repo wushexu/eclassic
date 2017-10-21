@@ -1,11 +1,14 @@
 const {extractFields, sendMgResult} = require('../../helper/helper');
 const validate = require('../../middleware/validate');
+const {maxNo, sequenceInterval} = require('./sorter');
 
-function simpleHandles(Model) {
+function simpleHandles(Model, options = {}) {
 
     let {requiredFields, updateFields, createFields} = Model.fields;
 
     let sortable = createFields.indexOf('no') >= 0;
+
+    let {ChildModel, parentFieldInChild, childExistsMsg} = options;
 
     async function index(req, res, next) {
 
@@ -13,31 +16,46 @@ function simpleHandles(Model) {
         if (sortable) {
             p = p.sort({no: 1});
         }
-        let ms=await p.toArray();
+        let ms = await p.toArray();
         res.send(ms);
     }
 
     async function create(req, res, next) {
         let m = extractFields(req, createFields);
+
+        if (sortable) {
+            let no = await maxNo(Model, null);
+            m.no = no + sequenceInterval;
+        }
+
         await Model.create(m);
         res.send(m);
     }
 
     async function show(req, res, next) {
         let _id = req.params._id;
-        let m=await Model.getById(_id);
+        let m = await Model.getById(_id);
         res.send(m);
     }
 
     async function update(req, res, next) {
         let m = extractFields(req, updateFields);
-        let r=await Model.update(req.params._id, m);
-        sendMgResult(res,r);
+        let r = await Model.update(req.params._id, m);
+        sendMgResult(res, r);
     }
 
     async function destroy(req, res, next) {
-        let r=await Model.remove(req.params._id);
-        sendMgResult(res,r);
+        if (ChildModel) {
+            let filter = {[parentFieldInChild]: req.params._id};
+            let childrenExists = await ChildModel.exists(filter);
+            if (childrenExists) {
+                let message = childExistsMsg || 'Child Resource Exists';
+                res.send({ok: 0, message: message});
+                return;
+            }
+        }
+        let r = await Model.remove(req.params._id);
+        sendMgResult(res, r);
     }
 
     if (requiredFields) {

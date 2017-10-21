@@ -7,7 +7,12 @@ let sorter = require('./helper/sorter');
 let Book = require('../models/book');
 let Chap = require('../models/chap');
 
-let handles = restful.simpleHandles(Book);
+let handles = restful.simpleHandles(Book,
+    {
+        ChildModel: Chap,
+        parentFieldInChild: 'bookId',
+        childExistsMsg: 'Chap Exists'
+    });
 
 
 restful.restful(router, handles);

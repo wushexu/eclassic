@@ -49,14 +49,27 @@ function sortable(Model, scopeField) {
 
     // *************
 
-    async function moveUp(req, res, next) {
+    async function swapOrder(req, res, next) {
+        let [m1, m2] = await Promise.all(
+            [
+                Model.getById(req.params._id, {no: 1}),
+                Model.getById(req.params.otherId, {no: 1})
+            ]);
+
+        let r = await swapNo(m1, m2);
+        sendMgResult(res, r);
+    }
+
+    async function moveUpOrDown(req, res, dir) {
 
         let m = await Model.getById(req.params._id);
         let filter = scope(m);
-        filter.no = {$lt: m.no};
+        let cmp = (dir === 'up') ? '$lt' : '$gt';
+        filter.no = {[cmp]: m.no};
+        let sort = {no: (dir === 'up') ? -1 : 1};
         let adjacent = await Model.coll().findOne(filter, {
             fields: {no: 1},
-            sort: {no: -1}
+            sort: sort
         });
         if (adjacent) {
             let r = await swapNo(m, adjacent);
@@ -64,46 +77,49 @@ function sortable(Model, scopeField) {
         } else {
             res.send({ok: 0});
         }
+    }
+
+    function moveUp(req, res, next) {
+
+        moveUpOrDown(req, res, 'up');
     }
 
     async function moveDown(req, res, next) {
 
-        let m = Model.getById(req.params._id);
+        moveUpOrDown(req, res, 'down');
+    }
+
+    async function moveTopOrBottom(req, res, dir) {
+
+        let m = await Model.getById(req.params._id);
         let filter = scope(m);
-        filter.no = {$gt: m.no};
-        let adjacent = await Model.coll().findOne(filter, {
-            fields: {no: 1},
-            sort: {no: 1}
-        });
-        if (adjacent) {
-            let r = await swapNo(m, adjacent);
-            sendMgResult(res, r);
+        let no;
+        if (dir === 'top') {
+            no = await minNo(Model, filter);
         } else {
-            res.send({ok: 0});
+            no = await maxNo(Model, filter);
         }
-    }
-
-    async function moveTop(req, res, next) {
-
-        let m = await Model.getById(req.params._id);
-        let filter = scope(m);
-        let no = minNo(Model, filter);
-        no -= sequenceInterval;
+        if (dir === 'top') {
+            no -= sequenceInterval;
+        } else {
+            no += sequenceInterval;
+        }
         let r = await Model.update(m._id, {no});
         sendMgResult(res, r);
     }
 
-    async function moveBottom(req, res, next) {
+    function moveTop(req, res, next) {
 
-        let m = await Model.getById(req.params._id);
-        let filter = scope(m);
-        let no = maxNo(Model, filter);
-        no += sequenceInterval;
-        let r = await Model.update(m._id, {no});
-        sendMgResult(res, r);
+        moveTopOrBottom(req, res, 'top');
     }
 
-    async function createBefore(req, res, next) {
+    function moveBottom(req, res, next) {
+
+        moveTopOrBottom(req, res, 'bottom');
+    }
+
+    async function createBeforeOrAfter(req, res, dir) {
+
         let nm = extractFields(req, Model.fields.createFields);
 
         let target = await Model.getById(req.params._id);
@@ -111,9 +127,13 @@ function sortable(Model, scopeField) {
             nm[scopeField] = target[scopeField];
         }
         nm.no = target.no;
+        if (dir === 'after') {
+            nm.no += sequenceInterval;
+        }
 
         let filter = scope(target);
-        filter.no = {$gte: target.no};
+        let cmp = (dir === 'before') ? '$gte' : '$gt';
+        filter.no = {[cmp]: target.no};
         let r = await Model.coll().updateMany(
             filter,
             {$inc: {no: sequenceInterval}});
@@ -126,30 +146,18 @@ function sortable(Model, scopeField) {
         }
     }
 
-    async function createAfter(req, res, next) {
-        let nm = extractFields(req, Model.fields.createFields);
+    function createBefore(req, res, next) {
 
-        let target = await Model.getById(req.params._id);
-        if (scopeField) {
-            nm[scopeField] = target[scopeField];
-        }
-        nm.no = target.no + sequenceInterval;
+        createBeforeOrAfter(req, res, 'before');
+    }
 
-        let filter = scope(target);
-        filter.no = {$gt: target.no};
-        let r = await  Model.coll().updateMany(
-            filter,
-            {$inc: {no: sequenceInterval}});
+    function createAfter(req, res, next) {
 
-        if (r && r.result && r.result.ok === 1) {
-            let cr = await Model.create(nm);
-            res.send(cr);
-        } else {
-            res.send({ok: 0});
-        }
+        createBeforeOrAfter(req, res, 'after');
     }
 
     return {
+        swapOrder,
         moveUp, moveDown,
         moveTop, moveBottom,
         createBefore, createAfter
@@ -158,9 +166,13 @@ function sortable(Model, scopeField) {
 
 function sort(router, actions) {
 
-    for (let name in actions) {
-        router.post('/:_id/' + name, actions[name]);
-    }
+    router.post('/:_id/swapOrder/:otherId', actions.swapOrder);
+    router.post('/:_id/moveUp', actions.moveUp);
+    router.post('/:_id/moveDown', actions.moveDown);
+    router.post('/:_id/moveTop', actions.moveTop);
+    router.post('/:_id/moveBottom', actions.moveBottom);
+    router.post('/:_id/createBefore', actions.createBefore);
+    router.post('/:_id/createAfter', actions.createAfter);
 }
 
 
@@ -189,4 +201,4 @@ function childResource(ChildModel, scopeField) {
 }
 
 
-module.exports = {maxNo, sortable, sort, childResource};
+module.exports = {maxNo, sequenceInterval, sortable, sort, childResource};

@@ -21,8 +21,12 @@ module.exports.simpleCurd = (collectionName) => {
         return db.collection(collectionName);
     }
 
-    function find(criteria) {
-        return coll().find(criteria).toArray();
+    function find(criteria, project = null) {
+        if (project) {
+            return coll().find(criteria, project).toArray();
+        } else {
+            return coll().find(criteria).toArray();
+        }
     }
 
     async function exists(criteria) {
@@ -30,9 +34,13 @@ module.exports.simpleCurd = (collectionName) => {
         return !!m;
     }
 
-    function getById(_id) {
+    function getById(_id, project = null) {
         if (typeof _id !== 'object') _id = ObjectID(_id);
-        return coll().findOne({_id});
+        if (project) {
+            return coll().findOne({_id}, project);
+        } else {
+            return coll().findOne({_id});
+        }
     }
 
     function getByName(name) {

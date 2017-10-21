@@ -46,11 +46,11 @@ app.use(methodOverride(function (req, res) {
     }
 }));
 
+app.use(cors);
 app.use(log_headers);
 app.use(log_params);
 app.use(connect_db);
 app.use(set_user);
-app.use(cors);
 
 let api = express();
 app.use('/api', api);
