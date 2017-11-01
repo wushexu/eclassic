@@ -34,6 +34,24 @@ function extractFields(req, fields) {
     return pairs;
 }
 
+function readModels(req, fields) {
+    let modelParameters = req.body;
+    if (typeof modelParameters.length === 'undefined') {
+        console.error('Must Be an Array');
+        return [];
+    }
+    return modelParameters.map(modelParameter => {
+        let model = {};
+        fields.forEach(field => {
+            let value = modelParameter[field];
+            if (typeof value !== 'undefined') {
+                model[field] = value;
+            }
+        });
+        return model;
+    });
+}
+
 function simpleReject(err) {
     console.error("OMG :(");
     console.error(err);
@@ -60,7 +78,7 @@ function sendError(req, res) {
     };
 }
 
-function sendMgResult(res,r) {
+function sendMgResult(res, r) {
     if (r.result) {
         r = r.result;
     }
@@ -71,6 +89,7 @@ function sendMgResult(res,r) {
 module.exports = {
     reqParam,
     extractFields,
+    readModels,
     emptyObject,
     sendError,
     sendMgResult

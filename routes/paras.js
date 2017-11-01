@@ -22,6 +22,22 @@ async function saveMerging(source, target, res) {
     sendMgResult(res, r);
 }
 
+function mergeContent(p1, p2, target) {
+    let {content: content1, trans: trans1} = p1;
+    let {content: content2, trans: trans2} = p2;
+    let content = content1 + LF + content2;
+    let trans;
+    if (trans1 || trans2) {
+        if (!trans1) {
+            trans = trans2;
+        } else if (trans2) {
+            trans = trans1 + LF + trans2;
+        }
+    }
+    target.content = content;
+    target.trans = trans;
+}
+
 async function mergeUp(req, res, next) {
 
     let source = await Para.getById(req.params._id);
@@ -41,17 +57,7 @@ async function mergeUp(req, res, next) {
         return;
     }
 
-    let {content, trans} = target;
-    content = content + LF + source.content;
-    target.content = content;
-    if (trans || source.trans) {
-        if (!trans) {
-            trans = source.trans;
-        } else if (source.trans) {
-            trans = trans + LF + source.trans;
-        }
-        target.trans = trans;
-    }
+    mergeContent(target, source, target);
 
     saveMerging(source, target, res);
 }
@@ -75,17 +81,7 @@ async function mergeDown(req, res, next) {
         return;
     }
 
-    let {content, trans} = target;
-    content = source.content + LF + content;
-    target.content = content;
-    if (trans || source.trans) {
-        if (!trans) {
-            trans = source.trans;
-        } else if (source.trans) {
-            trans = source.trans + LF + trans;
-        }
-        target.trans = trans;
-    }
+    mergeContent(source, target, target);
 
     saveMerging(source, target, res);
 }

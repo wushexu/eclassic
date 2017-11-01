@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {sendError} = require('../helper/helper');
+let {readModels, sendError} = require('../helper/helper');
 let restful = require('./helper/rest');
 let sorter = require('./helper/sorter');
 let Chap = require('../models/chap');
@@ -11,7 +11,7 @@ let handles = restful.simpleHandles(Chap,
     {
         ChildModel: Para,
         parentFieldInChild: 'chapId',
-        childExistsMsg: 'Para Exists'
+        childExistsMsg: 'Has Content'
     });
 
 let {show, update, destroy} = handles;
@@ -22,12 +22,33 @@ router.param('_id', function (req, res, next, _id) {
     next();
 });
 
+async function createParas(req, res, next) {
+
+    let models = readModels(req, Para.fields.createFields);
+
+    const chapId = req.params.chapId;
+    let no = await sorter.maxNo(Para, {chapId});
+    no += sorter.sequenceInterval;
+
+    let promises = models.map(m => {
+        m.no = no;
+        no += sorter.sequenceInterval;
+        m.chapId = chapId;
+        return Para.create(m);
+    });
+
+    Promise.all(promises)
+        .then(_ => res.send(models))
+        .catch(sendError(req, res));
+}
 
 let {list: listParas, create: createPara} = sorter.childResource(Para, 'chapId');
 
+
 router.route('/:_id/paras')
     .get(listParas)
-    .post(createPara);
+    .post(createPara)
+    .put(createParas);
 
 router.get('/:_id/detail', function (req, res, next) {
 
@@ -35,7 +56,7 @@ router.get('/:_id/detail', function (req, res, next) {
     const cp = Chap.getById(cid);
     const pp = Para.coll()
         .find({chapId: cid})
-        .project({chapId: 0})
+        .project({chapId: 0, no: 0})
         .sort({no: 1})
         .toArray();
     Promise.all([cp, pp])

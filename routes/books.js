@@ -11,7 +11,7 @@ let handles = restful.simpleHandles(Book,
     {
         ChildModel: Chap,
         parentFieldInChild: 'bookId',
-        childExistsMsg: 'Chap Exists'
+        childExistsMsg: 'Chapter Exists'
     });
 
 
@@ -35,7 +35,7 @@ router.get('/:_id/detail', function (req, res, next) {
     const bp = Book.getById(bid);
     const cp = Chap.coll()
         .find({bookId: bid})
-        .project({bookId: 0})
+        .project({bookId: 0, no: 0})
         .sort({no: 1})
         .toArray();
     Promise.all([bp, cp])

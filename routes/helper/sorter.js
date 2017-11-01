@@ -1,7 +1,7 @@
-let {extractFields, sendMgResult} = require('../../helper/helper');
+let {extractFields, readModels, sendError, sendMgResult} = require('../../helper/helper');
 
-const sequenceInterval = 10;
-const sequenceSeed = 1000;
+const sequenceInterval = 1024;
+const sequenceSeed = 10000;
 
 async function maxNo(Model, filter) {
     let last = await Model.coll()
@@ -118,32 +118,75 @@ function sortable(Model, scopeField) {
         moveTopOrBottom(req, res, 'bottom');
     }
 
+    async function createSeqSpace(target, dir, count = 1) {
+
+        let filter = scope(target);
+        let seqs = [];
+
+        let cmp = (dir === 'before') ? '$lt' : '$gt';
+        filter.no = {[cmp]: target.no};
+        let adjacent = await Model.coll()
+            .findOne(filter, {
+                fields: {no: 1},
+                sort: {no: (dir === 'before') ? -1 : 1}
+            });
+
+        if (adjacent) {
+            let lower = (dir === 'before') ? adjacent.no : target.no;
+            let higher = (dir === 'after') ? adjacent.no : target.no;
+            let space = higher - lower;
+            let seqInterval = 1;
+            if (space > count) {
+                if (space > count * 8) {
+                    seqInterval = 8;
+                }
+
+                let seq = lower + seqInterval;
+                for (let i = 0; i < count; i++) {
+                    seqs.push(seq);
+                    seq += seqInterval;
+                }
+                return seqs;
+            }
+        }
+
+        cmp = (dir === 'before') ? '$gte' : '$gt';
+        filter.no = {[cmp]: target.no};
+        let r = await Model.coll().updateMany(
+            filter,
+            {$inc: {no: sequenceInterval * count}});
+        if (!r.result || r.result.ok !== 1) {
+            return null;
+        }
+        let seq = target.no;
+        if (dir === 'after') {
+            seq += sequenceInterval;
+        }
+        for (let i = 0; i < count; i++) {
+            seqs.push(seq);
+            seq += sequenceInterval;
+        }
+        return seqs;
+    }
+
     async function createBeforeOrAfter(req, res, dir) {
 
         let nm = extractFields(req, Model.fields.createFields);
 
         let target = await Model.getById(req.params._id);
+
+        let seqs = await createSeqSpace(target, dir);
+        if (!seqs) {
+            res.send({ok: 0});
+            return;
+        }
+        nm.no = seqs[0];
+
         if (scopeField) {
             nm[scopeField] = target[scopeField];
         }
-        nm.no = target.no;
-        if (dir === 'after') {
-            nm.no += sequenceInterval;
-        }
-
-        let filter = scope(target);
-        let cmp = (dir === 'before') ? '$gte' : '$gt';
-        filter.no = {[cmp]: target.no};
-        let r = await Model.coll().updateMany(
-            filter,
-            {$inc: {no: sequenceInterval}});
-
-        if (r && r.result && r.result.ok === 1) {
-            let cr = await Model.create(nm);
-            res.send(cr);
-        } else {
-            res.send({ok: 0});
-        }
+        await Model.create(nm);
+        res.send(nm);
     }
 
     function createBefore(req, res, next) {
@@ -156,11 +199,47 @@ function sortable(Model, scopeField) {
         createBeforeOrAfter(req, res, 'after');
     }
 
+    async function createManyBeforeOrAfter(req, res, dir) {
+
+        let models = readModels(req, Model.fields.createFields);
+        let target = await Model.getById(req.params._id);
+
+        let seqs = await createSeqSpace(target, dir, models.length);
+        if (!seqs) {
+            res.send([]);
+            return;
+        }
+
+        let promises = models.map((nm, index) => {
+            if (scopeField) {
+                nm[scopeField] = target[scopeField];
+            }
+            console.log(index, seqs[index]);
+            nm.no = seqs[index];
+            return Model.create(nm);
+        });
+
+        Promise.all(promises)
+            .then(_ => res.send(models))
+            .catch(sendError(req, res));
+    }
+
+    function createManyBefore(req, res, next) {
+
+        createManyBeforeOrAfter(req, res, 'before');
+    }
+
+    function createManyAfter(req, res, next) {
+
+        createManyBeforeOrAfter(req, res, 'after');
+    }
+
     return {
         swapOrder,
         moveUp, moveDown,
         moveTop, moveBottom,
-        createBefore, createAfter
+        createBefore, createAfter,
+        createManyBefore, createManyAfter
     };
 }
 
@@ -173,6 +252,8 @@ function sort(router, actions) {
     router.post('/:_id/moveBottom', actions.moveBottom);
     router.post('/:_id/createBefore', actions.createBefore);
     router.post('/:_id/createAfter', actions.createAfter);
+    router.post('/:_id/createManyBefore', actions.createManyBefore);
+    router.post('/:_id/createManyAfter', actions.createManyAfter);
 }
 
 
@@ -183,6 +264,7 @@ function childResource(ChildModel, scopeField) {
         let ms = await ChildModel.coll()
             .find({[scopeField]: req.params._id})
             .sort({no: 1})
+            .project({no: 0})
             .toArray();
         res.send(ms);
     }

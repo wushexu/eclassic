@@ -14,7 +14,7 @@ function simpleHandles(Model, options = {}) {
 
         let p = Model.coll().find();
         if (sortable) {
-            p = p.sort({no: 1});
+            p = p.sort({no: 1}).project({no: 0});
         }
         let ms = await p.toArray();
         res.send(ms);
@@ -40,6 +40,7 @@ function simpleHandles(Model, options = {}) {
 
     async function update(req, res, next) {
         let m = extractFields(req, updateFields);
+        delete m.no;
         let r = await Model.update(req.params._id, m);
         sendMgResult(res, r);
     }
