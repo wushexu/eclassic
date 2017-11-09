@@ -1,4 +1,4 @@
-let testSuit = require('./helper/rest');
+let testSuit = require('./common/rest');
 
 describe('chap CRUD',
     testSuit('chap',

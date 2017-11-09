@@ -1,6 +1,5 @@
 const request = require('supertest');
-let {app, checkResult} = require('./helper');
-let modelHelper = require('./model');
+let {app, checkResult, modelHelper} = require('./helper');
 
 
 function testSuit(resourceName, toCreate, toUpdate, path, collectionPath) {

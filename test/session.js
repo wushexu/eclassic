@@ -1,7 +1,7 @@
 const request = require('supertest');
 const assert = require('assert');
-let {app} = require('./helper/helper');
-let {loginFn, logoutFn, checkUserinfoFn} = require('./helper/session');
+let {app} = require('./common/helper');
+let {loginFn, logoutFn, checkUserinfoFn} = require('./common/session');
 
 
 const agent = request.agent(app);

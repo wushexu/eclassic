@@ -1,4 +1,4 @@
-let testSuit = require('./helper/rest');
+let testSuit = require('./common/rest');
 
 describe('para CRUD',
     testSuit('para',

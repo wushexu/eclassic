@@ -1,9 +1,12 @@
 const {MongoClient, ObjectID} = require('mongodb');
 let {emptyObject} = require('../helper/helper');
 
-let db;
+let db = null;
 
 module.exports.connectDb = () => {
+    if (db) {
+        return Promise.resolve();
+    }
     return MongoClient
         .connect('mongodb://localhost:27017/articles')
         .then((cli) => {

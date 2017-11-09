@@ -2,8 +2,8 @@ let express = require('express');
 let router = express.Router();
 
 let {readModels, sendError} = require('../helper/helper');
-let restful = require('./helper/rest');
-let sorter = require('./helper/sorter');
+let restful = require('./common/rest');
+let sorter = require('./common/sorter');
 let Chap = require('../models/chap');
 let Para = require('../models/para');
 

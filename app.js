@@ -20,6 +20,7 @@ let users = require('./routes/users');
 let books = require('./routes/books');
 let chaps = require('./routes/chaps');
 let paras = require('./routes/paras');
+let dict = require('./routes/dict');
 
 let app = express();
 
@@ -61,6 +62,7 @@ api.use('/users', users);
 api.use('/books', books);
 api.use('/chaps', chaps);
 api.use('/paras', paras);
+api.use('/dict', dict);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

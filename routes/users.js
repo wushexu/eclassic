@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-const restful = require('./helper/rest');
+const restful = require('./common/rest');
 const User = require('../models/user');
 const validate = require('../middleware/validate');
 const {extractFields, sendError} = require('../helper/helper');
