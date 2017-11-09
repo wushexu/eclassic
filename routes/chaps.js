@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {readModels, sendError} = require('../helper/helper');
+let {readModels} = require('../helper/helper');
 let restful = require('./common/rest');
 let sorter = require('./common/sorter');
 let Chap = require('../models/chap');
@@ -39,7 +39,7 @@ async function createParas(req, res, next) {
 
     Promise.all(promises)
         .then(_ => res.send(models))
-        .catch(sendError(req, res));
+        .catch(next);
 }
 
 let {list: listParas, create: createPara} = sorter.childResource(Para, 'chapId');
@@ -63,7 +63,7 @@ router.get('/:_id/detail', function (req, res, next) {
         .then(function ([chap, paras]) {
             chap.paras = paras;
             res.send(chap);
-        }).catch(sendError(req, res))
+        }).catch(next)
 });
 
 router.route('/:_id')

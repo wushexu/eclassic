@@ -86,11 +86,19 @@ function sendMgResult(res, r) {
     res.send({ok: r.ok});
 }
 
+function wrapAsync(...asyncFns) {
+    return asyncFns.map(fn => function (req, res, next) {
+            fn(req, res, next).catch(next);
+        }
+    );
+}
+
 module.exports = {
     reqParam,
     extractFields,
     readModels,
     emptyObject,
     sendError,
-    sendMgResult
+    sendMgResult,
+    wrapAsync
 };

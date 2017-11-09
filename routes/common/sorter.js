@@ -1,4 +1,4 @@
-let {extractFields, readModels, sendError, sendMgResult} = require('../../helper/helper');
+let {extractFields, readModels, sendMgResult, wrapAsync} = require('../../helper/helper');
 
 const sequenceInterval = 1024;
 const sequenceSeed = 10000;
@@ -81,12 +81,12 @@ function sortable(Model, scopeField) {
 
     function moveUp(req, res, next) {
 
-        moveUpOrDown(req, res, 'up');
+        moveUpOrDown(req, res, 'up').catch(next);
     }
 
-    async function moveDown(req, res, next) {
+    function moveDown(req, res, next) {
 
-        moveUpOrDown(req, res, 'down');
+        moveUpOrDown(req, res, 'down').catch(next);
     }
 
     async function moveTopOrBottom(req, res, dir) {
@@ -110,12 +110,12 @@ function sortable(Model, scopeField) {
 
     function moveTop(req, res, next) {
 
-        moveTopOrBottom(req, res, 'top');
+        moveTopOrBottom(req, res, 'top').catch(next);
     }
 
     function moveBottom(req, res, next) {
 
-        moveTopOrBottom(req, res, 'bottom');
+        moveTopOrBottom(req, res, 'bottom').catch(next);
     }
 
     async function createSeqSpace(target, dir, count = 1) {
@@ -191,15 +191,15 @@ function sortable(Model, scopeField) {
 
     function createBefore(req, res, next) {
 
-        createBeforeOrAfter(req, res, 'before');
+        createBeforeOrAfter(req, res, 'before').catch(next);
     }
 
     function createAfter(req, res, next) {
 
-        createBeforeOrAfter(req, res, 'after');
+        createBeforeOrAfter(req, res, 'after').catch(next);
     }
 
-    async function createManyBeforeOrAfter(req, res, dir) {
+    async function createManyBeforeOrAfter(req, res, next, dir) {
 
         let models = readModels(req, Model.fields.createFields);
         let target = await Model.getById(req.params._id);
@@ -221,18 +221,20 @@ function sortable(Model, scopeField) {
 
         Promise.all(promises)
             .then(_ => res.send(models))
-            .catch(sendError(req, res));
+            .catch(next);
     }
 
     function createManyBefore(req, res, next) {
 
-        createManyBeforeOrAfter(req, res, 'before');
+        createManyBeforeOrAfter(req, res, next, 'before').catch(next);
     }
 
     function createManyAfter(req, res, next) {
 
-        createManyBeforeOrAfter(req, res, 'after');
+        createManyBeforeOrAfter(req, res, next, 'after').catch(next);
     }
+
+    [swapOrder] = wrapAsync(swapOrder);
 
     return {
         swapOrder,
