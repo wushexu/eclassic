@@ -4,7 +4,7 @@ let router = express.Router();
 const restful = require('./common/rest');
 const User = require('../models/user');
 const validate = require('../middleware/validate');
-const {extractFields} = require('../helper/helper');
+const {extractFields, sendError} = require('../helper/helper');
 
 let handles = restful.simpleHandles(User);
 
@@ -24,7 +24,7 @@ function checkExists(req, res, next) {
     };
     User.exists({name})
         .then(hd)
-        .catch(next);
+        .catch(sendError(req, res));
 }
 
 handles.create = validate.appendValidator(
