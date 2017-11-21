@@ -4,11 +4,11 @@ describe.only('dict CRUD',
     testSuit('dict',
         {
             word: 'nuisance',
-            meaning: '讨厌的人；讨厌的东西',
+            explain: '讨厌的人；讨厌的东西',
             phonetic: [{uk: 'njuːsns'}],
             categories: {cet: 4, haici: 3, pro: 4},
             complete: [
-                {id: 1, pos: 'n', meaning: '讨厌的人'}
+                {id: 1, pos: 'n', explain: '讨厌的人'}
             ],
             //forms: {plural: '', past: '', pastp: '', presentp: ''},
             phrases: [],
@@ -17,7 +17,7 @@ describe.only('dict CRUD',
             usageTips: []
         },
         {
-            meaning: '讨厌的人；讨厌的东西；伤害',
+            explain: '讨厌的人；讨厌的东西；伤害',
             phonetic: [{uk: 'njuːsns'}, {us: 'nuːsns'}]
         },
         '/dict'));

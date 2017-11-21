@@ -52,14 +52,14 @@ module.exports.simpleCurd = (collectionName) => {
 
     function create(entity) {
         if (emptyObject(entity)) {
-            throw new Error("empty object.");
+            return Promise.resolve({ok: 0});
         }
         return coll().insertOne(entity);
     }
 
     function update(_id, values) {
         if (emptyObject(values)) {
-            throw new Error("empty object.");
+            return Promise.resolve({ok: 0});
         }
         if (typeof _id !== 'object') _id = ObjectID(_id);
         return coll().updateOne({'_id': _id}, {'$set': values});

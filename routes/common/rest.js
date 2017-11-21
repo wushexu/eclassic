@@ -35,7 +35,7 @@ function simpleHandles(Model, options = {}) {
     async function show(req, res, next) {
         let _id = req.params._id;
         let m = await Model.getById(_id);
-        res.send(m);
+        res.json(m);
     }
 
     async function update(req, res, next) {

@@ -38,7 +38,7 @@ function show(req, res, next) {
     } else {
         prom = Dict.coll().findOne({word: idOrWord});
     }
-    prom.then(m => res.send(m)).catch(next);
+    prom.then(m => res.json(m)).catch(next);
 }
 
 let handles = restful.simpleHandles(Dict);
