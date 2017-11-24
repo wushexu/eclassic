@@ -1,5 +1,6 @@
 let express = require('express');
 let router = express.Router();
+const {extractFields, sendMgResult, wrapAsync} = require('../helper/helper');
 
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
@@ -41,9 +42,24 @@ function show(req, res, next) {
     prom.then(m => res.json(m)).catch(next);
 }
 
+async function create(req, res, next) {
+    let dictItem = extractFields(req, Dict.fields.createFields);
+    let word = dictItem.word;
+    let existed = await Dict.coll().findOne({word});
+    if (existed) {
+        await Dict.update(existed._id, dictItem);
+        Object.assign(existed, dictItem);
+        res.send(existed);
+    } else {
+        await Dict.create(dictItem);
+        res.send(dictItem);
+    }
+}
+
 let handles = restful.simpleHandles(Dict);
 handles.index = index;
 handles.show = show;
+handles.create = wrapAsync(create)[0];
 
 restful.restful(router, handles);
 

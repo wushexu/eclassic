@@ -16,9 +16,9 @@ function reqParam(req, name, defaultValue) {
     let body = req.body || {};
     let query = req.query || {};
 
-    if (null != params[name] && params.hasOwnProperty(name)) return params[name];
-    if (null != body[name]) return body[name];
-    if (null != query[name]) return query[name];
+    if (typeof params[name] !== 'undefined' && params.hasOwnProperty(name)) return params[name];
+    if (typeof body[name] !== 'undefined') return body[name];
+    if (typeof query[name] !== 'undefined') return query[name];
 
     return defaultValue;
 }
