@@ -12,12 +12,12 @@ function emptyObject(obj) {
 }
 
 function reqParam(req, name, defaultValue) {
-    let params = req.params || {};
     let body = req.body || {};
+    let params = req.params || {};
     let query = req.query || {};
 
-    if (typeof params[name] !== 'undefined' && params.hasOwnProperty(name)) return params[name];
     if (typeof body[name] !== 'undefined') return body[name];
+    if (typeof params[name] !== 'undefined') return params[name];
     if (typeof query[name] !== 'undefined') return query[name];
 
     return defaultValue;
