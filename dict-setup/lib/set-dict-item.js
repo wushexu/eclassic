@@ -1,7 +1,7 @@
 const {
     regularPl, regularTPS,
     regularPast, regularPresentP
-} = require('regular-forms');
+} = require('./regular-forms');
 
 const WordFormNames = {
     '名词复数:': 'Pl',
@@ -74,4 +74,16 @@ function setForms(dictItem, wordForms, wordsFormOf) {
     }
 }
 
-module.exports = {setMeanings, setForms};
+
+function setPhonetics(dictItem, phonetics) {
+    if (phonetics) {
+        let phObj = {};
+        for (let [name, ph] of phonetics) {
+            let key = (name === '美') ? 'US' : 'UK';
+            phObj[key] = ph;
+        }
+        dictItem.phonetics = phObj;
+    }
+}
+
+module.exports = {setMeanings, setForms, setPhonetics};

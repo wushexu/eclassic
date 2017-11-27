@@ -83,7 +83,7 @@ function sendMgResult(res, r) {
         r = r.result;
     }
     console.log('Mongo Result: ' + JSON.stringify(r));
-    res.send({ok: r.ok});
+    res.send({ok: r.ok, n: r.n});
 }
 
 function wrapAsync(...asyncFns) {
@@ -93,6 +93,12 @@ function wrapAsync(...asyncFns) {
     );
 }
 
+function wrapAsyncOne(fn) {
+    return function (req, res, next) {
+        fn(req, res, next).catch(next);
+    };
+}
+
 module.exports = {
     reqParam,
     extractFields,
@@ -100,5 +106,6 @@ module.exports = {
     emptyObject,
     sendError,
     sendMgResult,
-    wrapAsync
+    wrapAsync,
+    wrapAsyncOne
 };

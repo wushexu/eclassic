@@ -1,8 +1,7 @@
 const fs = require('fs-extra');
 const config = require('../config');
-const {setMeanings, setForms} = require('../lib/set-dict-item');
-const jsonfile = require('jsonfile');
-const eachOf = require('async/eachOf');
+const {setMeanings, setForms, setPhonetics} = require('../lib/set-dict-item');
+const eachOfSeries = require('async/eachOfSeries');
 let request = require('request');
 
 
@@ -25,7 +24,7 @@ function* wordsToProcess() {
             }
             let group = groupFile.substring(5, groupFile.length - 5);
             let groupFilePath = `${wordObjectBaseDir}/${levelDir}/${groupFile}`;
-            let wordObjs = jsonfile.readFileSync(groupFilePath);
+            let wordObjs = fs.readJsonSync(groupFilePath);
             // wordObjs = wordObjs.slice(1, 2);
             for (let wordObj of wordObjs) {
                 yield {level, group, wordObj};
@@ -66,14 +65,7 @@ function loadWord() {
 
     setMeanings(dictItem, simple, complete);
     setForms(dictItem, wordForms, wordsFormOf);
-    if (phonetics) {
-        let phObj = {};
-        for (let [name, ph] of phonetics) {
-            let key = (name === '美') ? 'US' : 'UK';
-            phObj[key] = ph;
-        }
-        dictItem.phonetics = phObj;
-    }
+    setPhonetics(dictItem, phonetics);
 
     // console.log(dictItem);
     wordCount++;
@@ -92,7 +84,7 @@ function loadWord() {
 }
 
 function afterLoadWord() {
-    eachOf(wordsFormOf, function (formOf, word, callback) {
+    eachOfSeries(wordsFormOf, function (formOf, word, callback) {
         request.post(dictUrl, {json: {word, formOf}}, (err, res, body) => {
             if (err) {
                 callback(err);

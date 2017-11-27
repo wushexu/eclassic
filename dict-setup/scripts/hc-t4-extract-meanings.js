@@ -5,7 +5,6 @@ const {
     parseWordForms, parsePhonetics
 } = require('../lib/hc-parser');
 const {JSDOM} = require("jsdom");
-const jsonfile = require('jsonfile');
 
 
 let {hcDataBaseDir} = config;
@@ -51,13 +50,8 @@ let wordObjs = null;
 let wordObjsFile = null;
 
 let saveWordObjs = () => {
-    let lastSlash = wordObjsFile.lastIndexOf('/');
-    if (lastSlash > 0) {
-        let wordObjsDir = wordObjsFile.substring(0, lastSlash);
-        fs.ensureDirSync(wordObjsDir);
-    }
     // console.log('save', wordObjsFile);
-    jsonfile.writeFileSync(wordObjsFile, wordObjs, {spaces: 2});
+    fs.outputJsonSync(wordObjsFile, wordObjs, {spaces: 2});
     wordObjsFile = null;
 };
 

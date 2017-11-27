@@ -1,9 +1,10 @@
 let express = require('express');
 let router = express.Router();
-const {extractFields, sendMgResult, wrapAsync} = require('../helper/helper');
+const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../helper/helper');
 
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
+let {loadAWordHc, loadAWordYd} = require('../dict-setup/load-on-the-fly');
 
 
 function getLimit(req, defaultLimit) {
@@ -109,20 +110,26 @@ async function showAsync(req, res, next) {
                 }
             }
         }
-        res.json(dictItem);
-        return;
+        return res.json(dictItem);
     }
-    // let stem = req.query.stem;
-    // if (typeof stem === 'undefined') {
-    //     res.json(null);
-    //     return;
-    // }
-    let stems = guestStems(word);
-    // console.log(stems);
-    for (let stem of stems) {
-        dictItem = await Dict.coll().findOne({word: stem});
+    let loadOnTheFly = req.query.lotf;
+    if (typeof loadOnTheFly !== 'undefined') {
+        dictItem = await loadAWord(word);
         if (dictItem) {
-            break;
+            res.json(dictItem);
+            return;
+        }
+    }
+    let stem = req.query.stem;
+    if (typeof stem !== 'undefined') {
+        let stems = guestStems(word);
+        // console.log(stems);
+        for (let stem of stems) {
+            dictItem = await Dict.coll().findOne({word: stem});
+            if (dictItem) {
+                res.json(dictItem);
+                return;
+            }
         }
     }
     res.json(dictItem);
@@ -174,6 +181,40 @@ async function destroyAsync(req, res, next) {
 }
 
 
+async function loadAWord(word) {
+    let dictItem = await loadAWordHc(word);
+    // let dictItem = await loadAWordYd(word);
+    let existed = await Dict.coll().findOne({word}, {word: 1, categories: 1});
+    if (existed) {
+        await Dict.update(existed._id, dictItem);
+        dictItem._id = existed._id;
+    } else {
+        await Dict.create(dictItem);
+    }
+    return dictItem;
+}
+
+async function getBasicAsync(req, res, next) {
+    let word = req.params.word;
+    let dictItem = await Dict.coll().findOne({word},
+        {fields: {word: 1, explain: 1, categories: 1}});
+    if (!dictItem) {
+        let loadOnTheFly = req.query.lotf;
+        if (typeof loadOnTheFly !== 'undefined') {
+            dictItem = await loadAWord(word);
+            if (dictItem) {
+                dictItem = {
+                    word,
+                    _id: dictItem._id,
+                    explain: dictItem.explain,
+                    categories: dictItem.categories
+                };
+            }
+        }
+    }
+    res.json(dictItem);
+}
+
 function updateCategories(req, res, next) {
     let word = req.params.word;
     let categories = req.body;
@@ -188,7 +229,7 @@ function updateCategories(req, res, next) {
 
 
 router.get('/search/:key', search);
-
+router.get('/:word/basic', wrapAsyncOne(getBasicAsync));
 router.patch('/:word/categories', updateCategories);
 
 let [show, create, update, destroy] =
