@@ -88,7 +88,7 @@ const WordFormNames = {
 
 function setMeanings(dictItem, simple, complete) {
 
-    dictItem.explain = simple.map(mi => `${mi.pos}${mi.explain}`).join(';');
+    dictItem.explain = simple.map(mi => `${mi.pos}${mi.explain}`).join('\n');
 
     let nextItemId = 1;
     let completeMeanings = [];

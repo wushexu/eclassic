@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const {JSDOM} = require("jsdom");
-const {wordDir} = require("./fetch-pages");
+const config = require('../config');
 
 function* pagesToProcess(pageBaseDir) {
     let dirs = fs.readdirSync(pageBaseDir);
@@ -23,19 +23,20 @@ function* pagesToProcess(pageBaseDir) {
     }
 }
 
-function parsePages(dataBaseDir, pageParser) {
+function extractPhrases(dataBaseDir, pageParser) {
+
+    let phrasesStream = fs.createWriteStream(`${config.vocabularyDir}/phrases.txt`);
 
     let pageBaseDir = `${dataBaseDir}/word-pages`;
     let pageGenerator = pagesToProcess(pageBaseDir);
 
-    let wordCount = 0;
+    let phraseCount = 0;
     let startMs = Date.now();
+    let phrasesMap = {};
 
     function parsePage() {
 
         let {value, done} = pageGenerator.next();
-        // console.log('---\n\n');
-        // console.log(value, done);
         if (!value) {
             return;
         }
@@ -44,27 +45,19 @@ function parsePages(dataBaseDir, pageParser) {
 
         JSDOM.fromFile(pagePath).then(dom => {
             let doc = dom.window.document;
-            let meanings = pageParser.parseBasic(doc);
-            let detailMeanings = pageParser.parseDetail(doc);
-            let wordForms = pageParser.parseWordForms(doc);
-            let phonetics = pageParser.parsePhonetics(doc);
             let phrases = pageParser.parsePhrases(doc);
 
-            let wordObj = {
-                word,
-                simple: meanings,
-                complete: detailMeanings,
-                wordForms,
-                phonetics,
-                phrases
-            };
-            let wd = wordDir(word);
-            let wordObjFile = `${dataBaseDir}/word-objects/${wd}/${word}.json`;
-            fs.outputJsonSync(wordObjFile, wordObj, {spaces: 2});
+            for (let ph of phrases) {
+                if (phrasesMap[ph]) {
+                    continue;
+                }
+                phrasesMap[ph] = true;
+                phrasesStream.write(ph + '\n');
+            }
 
-            wordCount++;
+            phraseCount += phrases.length;
             let elapseMs = Date.now() - startMs;
-            console.log(word, wordCount, 'words.', elapseMs, 'ms.');
+            console.log(word, phraseCount, 'phrases.', elapseMs, 'ms.');
             parsePage();
         }).catch(err => {
             console.error(value);
@@ -76,4 +69,4 @@ function parsePages(dataBaseDir, pageParser) {
 }
 
 
-module.exports = {parsePages};
+module.exports = {extractPhrases};

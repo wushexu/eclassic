@@ -9,8 +9,8 @@ let {
 } = config;
 
 
-let coca = fs.readFileSync(`${vocabularyDir}/COCA2w-hc2w.txt`, 'utf8');
-let wordList = coca.split('\n');
-// wordList = wordList.slice(7100);
+let bnc = fs.readFileSync(`${vocabularyDir}/bnc15000.txt`, 'utf8');
+let wordList = bnc.split(/\r?\n/);
+wordList = wordList.slice(3000);
 
 fetchPages(wordList, ydBaseUrl, ydDataBaseDir);

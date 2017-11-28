@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
-const eachOfSeries = require('async/eachOfSeries');
-// const eachOfLimit = require('async/eachOfLimit');
+// const eachOfSeries = require('async/eachOfSeries');
+const eachOfLimit = require('async/eachOfLimit');
 const ensureAsync = require('async/ensureAsync');
 let request = require('request');
 const config = require('../config');
@@ -12,7 +12,11 @@ request = request.defaults({
 function wordDir(word) {
     let dir;
     if (word.length === 1 || word[1] === ' ') {
-        dir = word + word;
+        if (word[2] && word[2] !== ' ') {
+            dir = word[0] + word[2];
+        } else {
+            dir = word[0] + word[0];
+        }
     } else {
         dir = word.substring(0, 2);
     }
@@ -26,7 +30,7 @@ function fetchPages(wordList, baseUrl, pageBaseDir, doneCallback) {
     let wordCount = 0;
     let startMs = Date.now();
 
-    eachOfSeries(wordList, ensureAsync(function (word, index, callback) {
+    eachOfLimit(wordList, 2, ensureAsync(function (word, index, callback) {
         if (!/^[a-zA-Z][a-zA-Z -]*$/.test(word)) {
             return callback();
         }
@@ -62,4 +66,4 @@ function fetchPages(wordList, baseUrl, pageBaseDir, doneCallback) {
 
 }
 
-module.exports = {fetchPages,wordDir};
+module.exports = {fetchPages, wordDir};

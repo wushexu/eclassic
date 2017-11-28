@@ -15,14 +15,14 @@ let {dictUrl} = config;
 function* wordsToProcess(wordObjectBaseDir) {
 
     let dirs = fs.readdirSync(wordObjectBaseDir);
-    dirs = dirs.slice(1, 4);
+    // dirs = dirs.slice(1, 4);
     for (let dir of dirs) {
         if (!/^[a-z][a-z]$/.test(dir)) {
             continue;
         }
         let objectDir = `${wordObjectBaseDir}/${dir}`;
         let objectFiles = fs.readdirSync(objectDir);
-        objectFiles = objectFiles.slice(0, 2);
+        // objectFiles = objectFiles.slice(0, 2);
         for (let objectFile of objectFiles) {
             if (!objectFile.endsWith('.json')) {
                 continue;
@@ -51,12 +51,15 @@ function loadDict(dataBaseDir) {
         }
         // console.log(wordObj);
 
-        let {word, simple, complete, wordForms, phonetics} = wordObj;
+        let {word, simple, complete, wordForms, phonetics, phrases} = wordObj;
         let dictItem = {word};
 
         setMeanings(dictItem, simple, complete);
         setForms(dictItem, wordForms, wordsFormOf);
         setPhonetics(dictItem, phonetics);
+        if (phrases) {
+            dictItem.phrases = phrases;
+        }
 
         // console.log(dictItem);
         wordCount++;

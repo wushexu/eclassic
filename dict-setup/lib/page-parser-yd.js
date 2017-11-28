@@ -70,4 +70,8 @@ function parsePhonetics(doc) {
     return phonetics;
 }
 
-module.exports = {parseBasic, parseDetail, parseWordForms, parsePhonetics};
+function parsePhrases(doc) {
+    return null;
+}
+
+module.exports = {parseBasic, parseDetail, parseWordForms, parsePhonetics, parsePhrases};

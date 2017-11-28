@@ -102,4 +102,27 @@ function parsePhonetics(doc) {
     return phonetics;
 }
 
-module.exports = {parseBasic, parseDetail, parseWordForms, parsePhonetics};
+// const phrasePattern = /^[a-zA-Z][a-zA-Z '.-]+$/;
+const phrasePattern = /^[a-z][a-z ]+$/;
+
+function parsePhrases(doc) {
+    let phrases = [];
+    let phbs = doc.querySelectorAll('div.phrase > dl > dt > b');
+    for (let phb of phbs) {
+        let ph = phb.textContent;
+        if (ph.indexOf('(') > 0) {
+            ph = ph.substring(0, ph.indexOf('('));
+        }
+        ph = ph.trim();
+        if (!phrasePattern.test(ph)) {
+            continue;
+        }
+        if (ph.indexOf(' ') === -1) {
+            continue;
+        }
+        phrases.push(ph);
+    }
+    return phrases;
+}
+
+module.exports = {parseBasic, parseDetail, parseWordForms, parsePhonetics, parsePhrases};
