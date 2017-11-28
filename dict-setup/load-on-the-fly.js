@@ -1,7 +1,7 @@
-const config = require('./config');
 const {JSDOM} = require("jsdom");
-const hcParser = require('./lib/hc-parser');
-const ydParser = require('./lib/yd-parser');
+const config = require('./config');
+const hcParser = require('./lib/page-parser-hc');
+const ydParser = require('./lib/page-parser-yd');
 const {setMeanings, setForms, setPhonetics} = require('./lib/set-dict-item');
 
 let {hcBaseUrl, ydBaseUrl} = config;

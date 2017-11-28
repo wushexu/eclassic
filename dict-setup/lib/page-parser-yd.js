@@ -52,8 +52,15 @@ function parsePhonetics(doc) {
     let spans = doc.querySelectorAll('#phrsListTab span.pronounce');
     let phonetics = [];
     for (let span of spans) {
-        let phName = span.childNodes[0].textContent.trim();
+        let spTextNode = span.childNodes[0];
+        if (!spTextNode) {
+            continue;
+        }
+        let phName = spTextNode.textContent.trim();
         let phSpan = span.querySelector('span.phonetic');
+        if (!phSpan) {
+            continue;
+        }
         let ph = phSpan.textContent.trim();
         if (ph[0] !== '[' || ph[ph.length - 1] !== ']') {
             continue;

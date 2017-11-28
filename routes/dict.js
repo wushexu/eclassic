@@ -184,6 +184,7 @@ async function destroyAsync(req, res, next) {
 async function loadAWord(word) {
     let dictItem = await loadAWordHc(word);
     // let dictItem = await loadAWordYd(word);
+    console.log('fetched', word);
     let existed = await Dict.coll().findOne({word}, {word: 1, categories: 1});
     if (existed) {
         await Dict.update(existed._id, dictItem);
@@ -195,9 +196,20 @@ async function loadAWord(word) {
 }
 
 async function getBasicAsync(req, res, next) {
+    let fields = {_id: 0, word: 1, categories: 1};
+
+    if (typeof req.query._id !== 'undefined') {
+        fields._id = 1;
+    }
+    if (typeof req.query.explain !== 'undefined') {
+        fields.explain = 1;
+    }
+    if (typeof req.query.nextItemId !== 'undefined') {
+        fields.nextItemId = 1;
+    }
     let word = req.params.word;
     let dictItem = await Dict.coll().findOne({word},
-        {fields: {word: 1, explain: 1, categories: 1}});
+        {fields: fields});
     if (!dictItem) {
         let loadOnTheFly = req.query.lotf;
         if (typeof loadOnTheFly !== 'undefined') {

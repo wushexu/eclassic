@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const config = require('../config');
 const {JSDOM} = require("jsdom");
 
-let {hcDataBaseDir} = config;
+let {vocabularyDir, hcDataBaseDir} = config;
 
 let extractWords = (doc) => {
     let wordGroups = [];
