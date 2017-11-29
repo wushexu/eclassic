@@ -4,7 +4,7 @@ const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../helpe
 
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
-let {loadAWordHc, loadAWordYd} = require('../dict-setup/load-on-the-fly');
+let {loadAWordOnTheFly} = require('../dict-setup/load-on-the-fly');
 
 
 function getLimit(req, defaultLimit) {
@@ -182,8 +182,7 @@ async function destroyAsync(req, res, next) {
 
 
 async function loadAWord(word) {
-    let dictItem = await loadAWordHc(word);
-    // let dictItem = await loadAWordYd(word);
+    let dictItem = await loadAWordOnTheFly(word);
     console.log('fetched', word);
     let existed = await Dict.coll().findOne({word}, {word: 1, categories: 1});
     if (existed) {

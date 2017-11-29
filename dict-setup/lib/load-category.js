@@ -19,7 +19,6 @@ function loadCategory(loadSetting) {
     let wordCount = 0;
     let startMs = Date.now();
 
-
     let file = `${vocabularyDir}/${loadSetting.file}`;
 
     let data = fs.readFileSync(file, 'utf-8');
@@ -38,19 +37,25 @@ function loadCategory(loadSetting) {
         }
         // console.log('-', word);
 
+        let updatedCategory = loadSetting.categories;
+        if (typeof updatedCategory === 'function') {
+            updatedCategory = updatedCategory(index);
+        }
+
         let setCategory = () => {
             wordCount++;
+            console.log(word, updatedCategory);
             let patchUrl = `${dictUrl}/${word}/categories`;
-            request.patch(patchUrl, {json: loadSetting.categories}, (err, res, body) => {
+            request.patch(patchUrl, {json: updatedCategory}, (err, res, body) => {
                 if (err) {
                     console.log(':(', word);
                     console.log(err);
                     return callback(err);
                 }
                 // console.log('>', word);
-                if (body.n === 0) {
-                    console.log('?', word);
-                }
+                // if (body.n === 0) {
+                //     console.log('?', word);
+                // }
                 callback();
             });
         };
@@ -59,7 +64,6 @@ function loadCategory(loadSetting) {
             let getOpt = {url: `${dictUrl}/${word}/basic?lotf`, json: true};
             request(getOpt, (err, res, body) => {
                 if (body === null) {
-                    // console.log('skip 0');
                     return callback();
                 }
                 let {explain, categories} = body;
@@ -69,17 +73,15 @@ function loadCategory(loadSetting) {
                 // console.log(categories);
                 let skip = loadSetting.skipCondition(categories);
                 if (skip) {
-                    // console.log('skip 1');
                     return callback();
                 }
 
-                for (let key in loadSetting.categories) {
-                    if (loadSetting.categories[key] !== categories[key]) {
+                for (let key in updatedCategory) {
+                    if (updatedCategory[key] !== categories[key]) {
                         return setCategory();
                     }
                 }
                 // identical, skip
-                console.log('skip 2');
                 callback();
             });
         } else {
@@ -87,7 +89,7 @@ function loadCategory(loadSetting) {
         }
     }, function (err) {
         let elapseMs = Date.now() - startMs;
-        console.log(wordCount, 'words.', elapseMs, 'ms.');
+        console.log(`${wordCount} words. ${elapseMs} ms.`);
         if (err) console.error(err.message);
     });
 

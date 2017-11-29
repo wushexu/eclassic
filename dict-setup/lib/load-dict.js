@@ -33,7 +33,12 @@ function* wordsToProcess(wordObjectBaseDir) {
     }
 }
 
-function loadDict(dataBaseDir) {
+function loadDict(dataBaseDir, options) {
+
+    let {
+        meaningFieldPostfix, nextItemId,
+        loadPhonetics, loadWordForms, loadPhrases
+    } = options;
 
     let wordCount = 0;
     let startMs = Date.now();
@@ -54,10 +59,14 @@ function loadDict(dataBaseDir) {
         let {word, simple, complete, wordForms, phonetics, phrases} = wordObj;
         let dictItem = {word};
 
-        setMeanings(dictItem, simple, complete);
-        setForms(dictItem, wordForms, wordsFormOf);
-        setPhonetics(dictItem, phonetics);
-        if (phrases) {
+        setMeanings(dictItem, simple, complete, meaningFieldPostfix, nextItemId);
+        if (loadWordForms !== false) {
+            setForms(dictItem, wordForms, wordsFormOf);
+        }
+        if (loadPhonetics !== false) {
+            setPhonetics(dictItem, phonetics);
+        }
+        if (phrases && loadPhrases !== false) {
             dictItem.phrases = phrases;
         }
 

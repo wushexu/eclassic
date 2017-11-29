@@ -3,95 +3,98 @@ const {loadCategory} = require('../lib/load-category');
 
 let wordPattern = /^[a-zA-Z][a-zA-Z -]+$/;
 
+let wholeLine = (line) => {
+    if (!wordPattern.test(line)) {
+        return null;
+    }
+    return line;
+};
+
 let loadSettings = {
     junior: {
-        file: 'junior.txt',
+        file: 'wl-junior-1.txt',
         categories: {junior: 1},
         skipCondition: null,
-        extractWord: (line) => {
-            let word = line.split('\t')[0];
-            word = word.trim();
-            if (!/^[a-zA-Z][a-zA-Z -]*$/.test(word)) {
-                return null;
-            }
-            return word;
-        }
+        extractWord: wholeLine
     },
     senior: {
-        file: 'senior.txt',
+        file: 'wl-junior-2.txt',
         categories: {junior: 2},
         skipCondition: (categories) => categories.junior === 1,
-        extractWord: (line) => {
-            line = line.trimLeft();
-            let word = line.split(' ')[0];
-            if (!wordPattern.test(word)) {
-                return null;
-            }
-            return word;
-        }
+        extractWord: wholeLine
 
     },
     cet4: {
-        file: 'cet4.csv',
-        categories: {cet4: true},
+        file: 'wl-cet4.txt',
+        categories: {cet: 4},
         skipCondition: (categories) => categories.junior,
-        extractWord: (line) => {
-            let word = line.split(',')[0];
-            if (!wordPattern.test(word)) {
-                return null;
-            }
-            return word;
-        }
+        extractWord: wholeLine
     },
     cet6: {
-        file: 'cet6.txt',
-        categories: {cet6: true},
-        skipCondition: (categories) => categories.junior || categories.cet4,
-        extractWord: (line) => {
-            let word = line.split(' ')[0];
-            if (!wordPattern.test(word)) {
-                return null;
-            }
-            return word;
-        }
+        file: 'wl-cet6.txt',
+        categories: {cet: 6},
+        skipCondition: (categories) => categories.junior || categories.cet === 4,
+        extractWord: wholeLine
     },
     gre: {
-        file: 'gre.txt',
+        file: 'wl-gre.txt',
         categories: {gre: true},
-        skipCondition: null,
-        extractWord: (line) => {
-            if (!wordPattern.test(line)) {
-                return null;
-            }
-            return line;
-        }
+        skipCondition: (categories) => categories.junior,
+        extractWord: wholeLine
     },
     yasi: {
-        file: 'yasi.txt',
+        file: 'wl-yasi.txt',
         categories: {yasi: true},
-        skipCondition: null,
-        extractWord: (line) => {
-            if (!/^\d+ [a-zA-Z]+$/.test(line)) {
-                return null;
-            }
-            return line.split(' ')[1];
-        }
+        skipCondition: (categories) => categories.junior,
+        extractWord: wholeLine
+    },
+    pro: {
+        file: 'wl-pro.txt',
+        categories: {pro: 1},
+        skipCondition: (categories) => categories.junior || categories.cet,
+        extractWord: wholeLine
     }
 };
 
 for (let level = 1; level <= 5; level++) {
     loadSettings['haici' + level] = {
-        file: `hc2w-${level}.txt`,
+        file: `wl-hc2w-${level}.txt`,
         categories: {haici: level},
         skipCondition: null,
-        extractWord: (line) => {
-            if (!wordPattern.test(line)) {
-                return null;
-            }
-            return line;
-        }
+        extractWord: wholeLine
+    }
+}
+
+let freqFiles = [
+    ['coca', 'wl-COCA20000.txt'],
+    ['bnc', 'wl-bnc15000.txt'],
+    ['anc', 'wl-anc30000.txt']];
+
+for (let [name, file] of freqFiles) {
+    loadSettings[name] = {
+        file: file,
+        categories: lineNo => {
+            let rank = parseInt(lineNo / 1000) + 1;
+            return {[name]: rank};
+        },
+        skipCondition: null,
+        extractWord: wholeLine
     }
 }
 
 
-loadCategory(loadSettings.haici5);
+// loadCategory(loadSettings.junior);
+// loadCategory(loadSettings.senior);
+// loadCategory(loadSettings.cet4);
+// loadCategory(loadSettings.cet6);
+// loadCategory(loadSettings.gre);
+// loadCategory(loadSettings.yasi);
+// loadCategory(loadSettings.pro);
+// loadCategory(loadSettings.haici5);
+// loadCategory(loadSettings.haici4);
+// loadCategory(loadSettings.haici3);
+// loadCategory(loadSettings.haici2);
+// loadCategory(loadSettings.haici1);
+// loadCategory(loadSettings.coca);
+// loadCategory(loadSettings.bnc);
+// loadCategory(loadSettings.anc);

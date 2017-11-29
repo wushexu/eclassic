@@ -1,27 +1,24 @@
 const fs = require('fs-extra');
 const config = require('../config');
+const {loadList, loadAsMap,uniqueLines} = require('../lib/word-list');
 
 let {vocabularyDir} = config;
 
+// let hc2wWordsMap = loadAsMap(`${vocabularyDir}/wl-hc2w.txt`);
+//
+// let cocaWords = loadList(`${vocabularyDir}/wl-COCA20000.txt`);
+// let cocaStream = fs.createWriteStream(`${vocabularyDir}/wl-COCA2w-hc2w.txt`);
+//
+// for (let word of cocaWords) {
+//     if (hc2wWordsMap[word]) {
+//         continue;
+//     }
+//     if (!/^[a-zA-Z][a-zA-Z -]*$/.test(word)) {
+//         continue;
+//     }
+//     cocaStream.write(word + '\n');
+// }
 
-let hc2wData = fs.readFileSync(`${vocabularyDir}/hc2w.txt`, 'utf8');
-let hc2wWords = hc2wData.split(/\r?\n/);
-let hc2wWordsMap = {};
-
-for (let word of hc2wWords) {
-    hc2wWordsMap[word] = true;
-}
-
-let cocaData = fs.readFileSync(`${vocabularyDir}/COCA20000.txt`, 'utf8');
-let cocaWords = cocaData.split(/\r?\n/);
-let cocaStream = fs.createWriteStream(`${vocabularyDir}/COCA2w-hc2w.txt`);
-
-for (let word of cocaWords) {
-    if (hc2wWordsMap[word]) {
-        continue;
-    }
-    if (!/^[a-zA-Z][a-zA-Z -]*$/.test(word)) {
-        continue;
-    }
-    cocaStream.write(word + '\n');
-}
+uniqueLines(
+    `${vocabularyDir}/wl-COCA20000.txt`,
+    `${vocabularyDir}/wl-COCA20000-uniq.txt`);

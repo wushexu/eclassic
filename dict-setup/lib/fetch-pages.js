@@ -49,7 +49,7 @@ function fetchPages(wordList, baseUrl, pageBaseDir, doneCallback) {
 
         wordCount++;
         let elapseMs = Date.now() - startMs;
-        console.log(word, elapseMs, 'ms.', wordCount, 'words.');
+        console.log(`${index} ${word}, ${elapseMs} ms. ${wordCount} words.`);
     }), function (err) {
         if (err) {
             if (doneCallback) {

@@ -86,11 +86,13 @@ const WordFormNames = {
     '第三人称单数': 'TPS'
 };
 
-function setMeanings(dictItem, simple, complete) {
+function setMeanings(dictItem, simple, complete, fieldPostfix, nextItemId) {
 
     dictItem.explain = simple.map(mi => `${mi.pos}${mi.explain}`).join('\n');
 
-    let nextItemId = 1;
+    if (!nextItemId) {
+        nextItemId = 1;
+    }
     let completeMeanings = [];
 
     for (let {pos, items} of complete) {
@@ -101,7 +103,13 @@ function setMeanings(dictItem, simple, complete) {
         }
         completeMeanings.push({pos, items: itemObjs});
     }
-    dictItem.complete = completeMeanings;
+    if (fieldPostfix) {
+        dictItem['simple' + fieldPostfix] = simple;
+        dictItem['complete' + fieldPostfix] = completeMeanings;
+    } else {
+        dictItem.simple = simple;
+        dictItem.complete = completeMeanings;
+    }
     dictItem.nextItemId = nextItemId;
 }
 

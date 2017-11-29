@@ -45,6 +45,10 @@ function parsePages(dataBaseDir, pageParser) {
         JSDOM.fromFile(pagePath).then(dom => {
             let doc = dom.window.document;
             let meanings = pageParser.parseBasic(doc);
+            if (!meanings || meanings.length === 0) {
+                parsePage();
+                return;
+            }
             let detailMeanings = pageParser.parseDetail(doc);
             let wordForms = pageParser.parseWordForms(doc);
             let phonetics = pageParser.parsePhonetics(doc);
