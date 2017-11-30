@@ -19,11 +19,19 @@ function loadAsMap(input) {
 }
 
 function uniqueLines(input, output) {
-    let wordMap = loadAsMap(input);
+    let list = loadList(input);
     let os = fs.createWriteStream(output);
-    for (let word in wordMap) {
+    let wordMap = {};
+    let wordCount = 0;
+    for (let word of list) {
+        if (word === '' || wordMap[word]) {
+            continue;
+        }
         os.write(word + '\n');
+        wordCount++;
+        wordMap[word] = true;
     }
+    console.log(list.length, wordCount);
 }
 
 function transformLines(input, output, options) {
@@ -51,7 +59,6 @@ function transformLines(input, output, options) {
     } else {
         os = fs.createWriteStream(output);
     }
-
 
     rl.on('line', line => {
 

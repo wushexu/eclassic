@@ -66,4 +66,31 @@ function fetchPages(wordList, baseUrl, pageBaseDir, doneCallback) {
 
 }
 
-module.exports = {fetchPages, wordDir};
+function movePages(sourceDir, targetDir) {
+    let dirs = fs.readdirSync(sourceDir);
+// dirs = dirs.slice(3, 4);
+    for (let dir of dirs) {
+        if (dir.startsWith('.')) {
+            continue;
+        }
+        let pageDir = `${sourceDir}/${dir}`;
+        let wordPages = fs.readdirSync(pageDir);
+        // wordPages = wordPages.slice(0, 2);
+        for (let wordPage of wordPages) {
+            if (!wordPage.endsWith('.html')) {
+                continue;
+            }
+            let pagePath = `${pageDir}/${wordPage}`;
+            let word = wordPage.substr(0, wordPage.length - 5);
+            let wd = wordDir(word);
+            let targetPath = `${targetDir}/${wd}/${wordPage}`;
+            try {
+                fs.moveSync(pagePath, targetPath);
+            } catch (e) {
+                console.error(e.code);
+            }
+        }
+    }
+}
+
+module.exports = {fetchPages, wordDir, movePages};

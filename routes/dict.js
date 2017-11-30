@@ -96,8 +96,7 @@ async function showAsync(req, res, next) {
     let dictItem;
     if (isId(idOrWord)) {
         dictItem = await Dict.getById(idOrWord);
-        res.json(dictItem);
-        return;
+        return res.json(dictItem);
     }
     let word = idOrWord;
     dictItem = await Dict.coll().findOne({word});
@@ -116,8 +115,7 @@ async function showAsync(req, res, next) {
     if (typeof loadOnTheFly !== 'undefined') {
         dictItem = await loadAWord(word);
         if (dictItem) {
-            res.json(dictItem);
-            return;
+            return res.json(dictItem);
         }
     }
     let stem = req.query.stem;
@@ -127,8 +125,7 @@ async function showAsync(req, res, next) {
         for (let stem of stems) {
             dictItem = await Dict.coll().findOne({word: stem});
             if (dictItem) {
-                res.json(dictItem);
-                return;
+                return res.json(dictItem);
             }
         }
     }
@@ -184,7 +181,7 @@ async function destroyAsync(req, res, next) {
 async function loadAWord(word) {
     let dictItem = await loadAWordOnTheFly(word);
     console.log('fetched', word);
-    let existed = await Dict.coll().findOne({word}, {word: 1, categories: 1});
+    let existed = await Dict.coll().findOne({word});
     if (existed) {
         await Dict.update(existed._id, dictItem);
         dictItem._id = existed._id;
@@ -197,31 +194,45 @@ async function loadAWord(word) {
 async function getBasicAsync(req, res, next) {
     let fields = {_id: 0, word: 1, categories: 1};
 
-    if (typeof req.query._id !== 'undefined') {
+    let loadId = typeof req.query._id !== 'undefined';
+    let loadExplain = typeof req.query.explain !== 'undefined';
+    let loadNextItemId = typeof req.query.nextItemId !== 'undefined';
+    if (loadId) {
         fields._id = 1;
     }
-    if (typeof req.query.explain !== 'undefined') {
+    if (loadExplain) {
         fields.explain = 1;
     }
-    if (typeof req.query.nextItemId !== 'undefined') {
+    if (loadNextItemId) {
         fields.nextItemId = 1;
     }
     let word = req.params.word;
     let dictItem = await Dict.coll().findOne({word},
         {fields: fields});
+    if (dictItem) {
+        return res.json(dictItem);
+    }
+    let loadOnTheFly = req.query.lotf;
+    if (typeof loadOnTheFly === 'undefined') {
+        return res.json(null);
+    }
+    dictItem = await loadAWord(word);
     if (!dictItem) {
-        let loadOnTheFly = req.query.lotf;
-        if (typeof loadOnTheFly !== 'undefined') {
-            dictItem = await loadAWord(word);
-            if (dictItem) {
-                dictItem = {
-                    word,
-                    _id: dictItem._id,
-                    explain: dictItem.explain,
-                    categories: dictItem.categories
-                };
-            }
-        }
+        return res.json(null);
+    }
+    let odi = dictItem;
+    dictItem = {
+        word,
+        categories: odi.categories
+    };
+    if (loadId) {
+        dictItem._id = odi._id;
+    }
+    if (loadExplain) {
+        dictItem.explain = odi.explain;
+    }
+    if (loadNextItemId) {
+        dictItem.nextItemId = odi.nextItemId;
     }
     res.json(dictItem);
 }
