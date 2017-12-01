@@ -6,7 +6,7 @@ let favicon = require('serve-favicon');
 let logger = require('morgan');
 //let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
-let {sendError} = require('./helper/helper');
+let {sendError} = require('./common/helper');
 
 let cors = require('./middleware/cors');
 let log_headers = require('./middleware/log_headers');

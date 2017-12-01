@@ -1,5 +1,6 @@
 const {MongoClient, ObjectID} = require('mongodb');
-let {emptyObject} = require('../helper/helper');
+let {emptyObject} = require('../common/helper');
+let {MongoUrl} = require('../common/config');
 
 let db = null;
 
@@ -8,15 +9,13 @@ module.exports.connectDb = () => {
         return Promise.resolve();
     }
     return MongoClient
-        .connect('mongodb://localhost:27017/articles')
-        .then((cli) => {
+        .connect(MongoUrl)
+        .then(cli => {
             db = cli;
         });
 };
 
-module.exports.getDb = () => {
-    return db;
-};
+module.exports.getDb = () => db;
 
 module.exports.simpleCurd = (collectionName) => {
 

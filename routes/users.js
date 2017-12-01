@@ -4,7 +4,7 @@ let router = express.Router();
 const restful = require('./common/rest');
 const User = require('../models/user');
 const validate = require('../middleware/validate');
-const {extractFields, sendError} = require('../helper/helper');
+const {extractFields, sendError} = require('../common/helper');
 
 let handles = restful.simpleHandles(User);
 

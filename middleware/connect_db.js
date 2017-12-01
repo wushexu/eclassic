@@ -1,5 +1,5 @@
 const {connectDb} = require('../models/db');
-const {sendError} = require('../helper/helper');
+const {sendError} = require('../common/helper');
 
 module.exports = (req, res, next) => {
     console.log("------------");

@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const {sendError} = require('../helper/helper');
+const {sendError} = require('../common/helper');
 
 module.exports = (req, res, next) => {
     let uid = req.session && req.session.uid;

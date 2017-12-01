@@ -1,5 +1,5 @@
 let debug = require('debug')('cr:p');
-let {emptyObject} = require('../helper/helper');
+let {emptyObject} = require('../common/helper');
 
 
 module.exports = (req, res, next) => {

@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {sendMgResult} = require('../helper/helper');
+let {sendMgResult} = require('../common/helper');
 let restful = require('./common/rest');
 let sorter = require('./common/sorter');
 let Para = require('../models/para');

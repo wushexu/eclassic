@@ -1,4 +1,4 @@
-const {reqParam} = require('../helper/helper');
+const {reqParam} = require('../common/helper');
 
 function parseField(field) {
     return field

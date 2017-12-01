@@ -88,7 +88,7 @@ const WordFormNames = {
 
 function setMeanings(dictItem, simple, complete, fieldPostfix, nextItemId) {
 
-    dictItem.explain = simple.map(mi => `${mi.pos}${mi.explain}`).join('\n');
+    dictItem.explain = simple.map(mi => `${mi.pos}${mi.exp}`).join('\n');
 
     if (!nextItemId) {
         nextItemId = 1;
@@ -98,7 +98,7 @@ function setMeanings(dictItem, simple, complete, fieldPostfix, nextItemId) {
     for (let {pos, items} of complete) {
         let itemObjs = [];
         for (let meaningItem of items) {
-            itemObjs.push({id: nextItemId, explain: meaningItem});
+            itemObjs.push({id: nextItemId, exp: meaningItem});
             nextItemId++;
         }
         completeMeanings.push({pos, items: itemObjs});

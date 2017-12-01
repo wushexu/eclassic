@@ -2,6 +2,7 @@
 
 /dump
 
+common/config.js
 dict-setup/config.js
 
 # compiled output

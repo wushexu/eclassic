@@ -1,4 +1,4 @@
-const {extractFields, sendMgResult, wrapAsync} = require('../../helper/helper');
+const {extractFields, sendMgResult, wrapAsync} = require('../../common/helper');
 const validate = require('../../middleware/validate');
 const {maxNo, sequenceInterval} = require('./sorter');
 

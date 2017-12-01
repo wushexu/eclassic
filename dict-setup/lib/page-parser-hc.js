@@ -28,8 +28,8 @@ function parseBasic(doc) {
         if (strong.tagName !== 'STRONG') {
             break;
         }
-        let explain = strong.textContent.trim();
-        meanings.push({pos, explain});
+        let exp = strong.textContent.trim();
+        meanings.push({pos, exp});
     }
     return meanings;
 }

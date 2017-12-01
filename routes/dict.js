@@ -1,6 +1,6 @@
 let express = require('express');
 let router = express.Router();
-const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../helper/helper');
+const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../common/helper');
 
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
@@ -207,32 +207,41 @@ async function getBasicAsync(req, res, next) {
         fields.nextItemId = 1;
     }
     let word = req.params.word;
-    let dictItem = await Dict.coll().findOne({word},
-        {fields: fields});
+    let dictItem = await Dict.coll().findOne({word}, {fields});
     if (dictItem) {
         return res.json(dictItem);
     }
     let loadOnTheFly = req.query.lotf;
-    if (typeof loadOnTheFly === 'undefined') {
-        return res.json(null);
+    if (typeof loadOnTheFly !== 'undefined') {
+        dictItem = await loadAWord(word);
+        if (dictItem) {
+            let odi = dictItem;
+            dictItem = {
+                word,
+                categories: odi.categories
+            };
+            if (loadId) {
+                dictItem._id = odi._id;
+            }
+            if (loadExplain) {
+                dictItem.explain = odi.explain;
+            }
+            if (loadNextItemId) {
+                dictItem.nextItemId = odi.nextItemId;
+            }
+            return res.json(dictItem);
+        }
     }
-    dictItem = await loadAWord(word);
-    if (!dictItem) {
-        return res.json(null);
-    }
-    let odi = dictItem;
-    dictItem = {
-        word,
-        categories: odi.categories
-    };
-    if (loadId) {
-        dictItem._id = odi._id;
-    }
-    if (loadExplain) {
-        dictItem.explain = odi.explain;
-    }
-    if (loadNextItemId) {
-        dictItem.nextItemId = odi.nextItemId;
+    let stem = req.query.stem;
+    if (typeof stem !== 'undefined') {
+        let stems = guestStems(word);
+        // console.log(stems);
+        for (let stem of stems) {
+            dictItem = await Dict.coll().findOne({word: stem}, {fields});
+            if (dictItem) {
+                return res.json(dictItem);
+            }
+        }
     }
     res.json(dictItem);
 }

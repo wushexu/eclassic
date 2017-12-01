@@ -21,7 +21,6 @@
     "async": "^2.6.0",
     "fs-extra": "^4.0.2",
     "jsdom": "^11.4.0",
-    "jsonfile": "^4.0.0",
     "request": "^2.83.0"
   },
   "devDependencies": {

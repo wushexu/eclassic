@@ -37,7 +37,7 @@ function loadAWord(word, baseUrl, parser, nextItemId) {
 function loadAWordOnTheFly(word) {
 
     let hcPromise = loadAWord(word, hcBaseUrl, hcParser);
-    let ydPromise = loadAWord(word, ydBaseUrl, ydParser, 101);
+    let ydPromise = loadAWord(word, ydBaseUrl, ydParser, 71);
 
     return Promise.all([hcPromise, ydPromise])
         .then(([dictItemHc, dictItemYd]) => {

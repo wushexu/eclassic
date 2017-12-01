@@ -4,14 +4,14 @@ function parseBasic(doc) {
     let meanings = [];
     let lis = doc.querySelectorAll('#phrsListTab .trans-container li');
     for (let li of lis) {
-        let explain = li.textContent.trim();
+        let exp = li.textContent.trim();
         let pos = '';
-        if (/^[a-z]{1,5}\./.test(explain)) {
-            let di = explain.indexOf('.');
-            pos = explain.substring(0, di + 1);
-            explain = explain.substr(di + 1);
+        if (/^[a-z]{1,5}\./.test(exp)) {
+            let di = exp.indexOf('.');
+            pos = exp.substring(0, di + 1);
+            exp = exp.substr(di + 1);
         }
-        meanings.push({pos, explain});
+        meanings.push({pos, exp});
     }
     return meanings;
 }
