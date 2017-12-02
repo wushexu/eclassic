@@ -2,7 +2,7 @@
 
 function parseBasic(doc) {
     let meanings = [];
-    let basicEl = doc.querySelector('ul.dict-basic-ul');
+    let basicEl = doc.querySelector('div.word > div.basic > ul');
     if (!basicEl) {
         // console.log('no Basic');
         return meanings;

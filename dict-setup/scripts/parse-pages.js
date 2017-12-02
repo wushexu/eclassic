@@ -4,6 +4,5 @@ const ydParser = require('../lib/page-parser-yd');
 const {parsePages} = require('../lib/parse-pages');
 
 
-// parsePages(config.hcDataBaseDir, hcParser);
-
-parsePages(config.ydDataBaseDir, ydParser);
+parsePages(config.hcDataBaseDir, hcParser);
+// parsePages(config.ydDataBaseDir, ydParser);

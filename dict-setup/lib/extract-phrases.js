@@ -1,31 +1,10 @@
 const fs = require('fs-extra');
 const {JSDOM} = require("jsdom");
-const config = require('../config');
+const {pagesToProcess} = require('./parse-pages');
 
-function* pagesToProcess(pageBaseDir) {
-    let dirs = fs.readdirSync(pageBaseDir);
-    // dirs = dirs.slice(3, 4);
-    for (let dir of dirs) {
-        if (!/^[a-z][a-z]$/.test(dir)) {
-            continue;
-        }
-        let pageDir = `${pageBaseDir}/${dir}`;
-        let wordPages = fs.readdirSync(pageDir);
-        // wordPages = wordPages.slice(0, 2);
-        for (let wordPage of wordPages) {
-            if (!wordPage.endsWith('.html')) {
-                continue;
-            }
-            let word = wordPage.substr(0, wordPage.length - 5);
-            let pagePath = `${pageDir}/${wordPage}`;
-            yield {word, pagePath};
-        }
-    }
-}
+function extractPhrases(dataBaseDir, pageParser, output) {
 
-function extractPhrases(dataBaseDir, pageParser) {
-
-    let phrasesStream = fs.createWriteStream(`${config.vocabularyDir}/phrases.txt`);
+    let phrasesStream = fs.createWriteStream(output);
 
     let pageBaseDir = `${dataBaseDir}/word-pages`;
     let pageGenerator = pagesToProcess(pageBaseDir);
@@ -41,7 +20,6 @@ function extractPhrases(dataBaseDir, pageParser) {
             return;
         }
         let {word, pagePath} = value;
-        // console.log(word);
 
         JSDOM.fromFile(pagePath).then(dom => {
             let doc = dom.window.document;

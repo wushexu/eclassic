@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
-// const eachOfSeries = require('async/eachOfSeries');
-const eachOfLimit = require('async/eachOfLimit');
+const eachOfSeries = require('async/eachOfSeries');
+// const eachOfLimit = require('async/eachOfLimit');
 const ensureAsync = require('async/ensureAsync');
 let request = require('request');
 const config = require('../config');
@@ -30,7 +30,7 @@ function fetchPages(wordList, baseUrl, pageBaseDir, doneCallback) {
     let wordCount = 0;
     let startMs = Date.now();
 
-    eachOfLimit(wordList, 2, ensureAsync(function (word, index, callback) {
+    eachOfSeries(wordList, ensureAsync(function (word, index, callback) {
         if (!/^[a-zA-Z][a-zA-Z -]*$/.test(word)) {
             return callback();
         }
@@ -42,25 +42,27 @@ function fetchPages(wordList, baseUrl, pageBaseDir, doneCallback) {
         if (fs.existsSync(pagePath) && fs.statSync(pagePath).size > 10 * 1024) {
             return callback();
         }
+
+        let errHandler = (err) => {
+            console.error('a-oh');
+            console.error(err);
+        };
+
         let ws = fs.createWriteStream(pagePath);
         ws.on('close', callback);
+        ws.on('error', errHandler);
         let url = `${baseUrl}/${word}`;
-        request(url).pipe(ws);
+        request(url).on('error', errHandler).pipe(ws);
 
         wordCount++;
         let elapseMs = Date.now() - startMs;
-        console.log(`${index} ${word}, ${elapseMs} ms. ${wordCount} words.`);
+        console.log(`${index} ${word}, ${wordCount} words, ${elapseMs} ms.`);
     }), function (err) {
         if (err) {
-            if (doneCallback) {
-                doneCallback(err);
-            } else {
-                console.error(err);
-            }
-        } else {
-            if (doneCallback) {
-                doneCallback();
-            }
+            console.error(':(');
+            console.error(err);
+        } else if (doneCallback) {
+            doneCallback();
         }
     });
 

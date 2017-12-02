@@ -61,12 +61,12 @@ function loadCategory(loadSetting) {
         };
 
         if (loadSetting.skipCondition) {
-            let getOpt = {url: `${dictUrl}/${word}/basic?lotf`, json: true};
+            let getOpt = {url: `${dictUrl}/${word}/categories`, json: true};
             request(getOpt, (err, res, body) => {
                 if (body === null) {
                     return callback();
                 }
-                let {explain, categories} = body;
+                let categories = body;
                 if (!categories) {
                     return setCategory();
                 }

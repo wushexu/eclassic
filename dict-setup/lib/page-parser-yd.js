@@ -71,7 +71,45 @@ function parsePhonetics(doc) {
 }
 
 function parsePhrases(doc) {
-    return null;
+    let phrases = [];
+    let posLis = doc.querySelectorAll('#authDictTrans > ul > li');
+    for (let posLi of posLis) {
+        let posSpan = posLi.children[0];
+        if (!posSpan || posSpan.tagName !== 'SPAN') {
+            continue;
+        }
+        let pos = posSpan.textContent.trim();
+        if (pos !== '短语:') {
+            continue;
+        }
+        let phrasesUl = posLi.children[1];
+        if (!phrasesUl || phrasesUl.tagName !== 'UL') {
+            continue;
+        }
+        let phraseLis = phrasesUl.children;
+        for (let li of phraseLis) {
+            let phraseExp = li.textContent.trim();
+            if (phraseExp.indexOf('\n') >= 0) {
+                phraseExp = phraseExp.substring(0, phraseExp.indexOf('\n'));
+            }
+            if (phraseExp.indexOf('(') >= 0) {
+                phraseExp = phraseExp.replace(/\([^)]+\)/g, ' ');
+                phraseExp = phraseExp.replace(/  +/g, ' ');
+            }
+            let matcher = phraseExp.match(/^([a-zA-Z ]+)/);
+            if (matcher) {
+                let phrase = matcher[1];
+                if (phrase) {
+                    phrase = phrase.trim();
+                    let words = phrase.split(' ');
+                    if (words.length >= 2) {
+                        phrases.push(phrase);
+                    }
+                }
+            }
+        }
+    }
+    return phrases;
 }
 
 module.exports = {parseBasic, parseDetail, parseWordForms, parsePhonetics, parsePhrases};

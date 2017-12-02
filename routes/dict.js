@@ -4,6 +4,7 @@ const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../commo
 
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
+let {guestBaseForms} = require('../dict-setup/lib/word-forms');
 let {loadAWordOnTheFly} = require('../dict-setup/load-on-the-fly');
 
 
@@ -50,91 +51,52 @@ function isId(idOrWord) {
     return /^[0-9a-z]{24}$/.test(idOrWord);
 }
 
-function guestStems(word) {
-    let stems = [];
-    let len = word.length;
-    if (word.endsWith('s')) {
-        if (word.endsWith('es')) {
-            if (word.endsWith('ies')) {
-                stems.push(word.substring(0, len - 3) + 'y');
-            } else {
-                stems.push(word.substring(0, len - 2));
-            }
-        }
-        stems.push(word.substring(0, len - 1));
-        return stems;
-    }
-
-    if (word.endsWith('ed')) {
-        if (word[len - 3] === word[len - 4]) {
-            stems.push(word.substring(0, len - 3));
-        } else {
-            stems.push(word.substring(0, len - 2));
-        }
-        if (word.endsWith('ied')) {
-            stems.push(word.substring(0, len - 3) + 'y');
-        } else {
-            stems.push(word.substring(0, len - 1));
-        }
-        return stems;
-    }
-
-    if (word.endsWith('ing')) {
-        if (word[len - 4] === word[len - 5]) {
-            stems.push(word.substring(0, len - 4));
-        } else {
-            let st = word.substring(0, len - 3);
-            stems.push(st);
-            stems.push(st + 'e');
-        }
-    }
-    return stems;
-}
-
 async function showAsync(req, res, next) {
     let idOrWord = req.params._id;
-    let dictItem;
+    let entry;
     if (isId(idOrWord)) {
-        dictItem = await Dict.getById(idOrWord);
-        return res.json(dictItem);
+        entry = await Dict.getById(idOrWord);
+        return res.json(entry);
     }
     let word = idOrWord;
-    dictItem = await Dict.coll().findOne({word});
-    if (dictItem) {
-        if (!dictItem.explain && dictItem.formOf) {
-            for (let stemWord in dictItem.formOf) {
-                dictItem = await Dict.coll().findOne({word: stemWord});
-                if (dictItem) {
-                    break;
+    entry = await Dict.coll().findOne({word});
+    if (entry) {
+        if (!entry.explain) {
+            let bfs = entry.baseForms;
+            if (bfs && bfs.length === 1) {
+                let baseForm = bfs[0];
+                let bfe = await Dict.coll().findOne({word: baseForm});
+                if (bfe) {
+                    entry = bfe;
                 }
             }
         }
-        return res.json(dictItem);
+        return res.json(entry);
     }
     let loadOnTheFly = req.query.lotf;
     if (typeof loadOnTheFly !== 'undefined') {
-        dictItem = await loadAWord(word);
-        if (dictItem) {
-            return res.json(dictItem);
+        entry = await loadAWord(word);
+        if (entry) {
+            return res.json(entry);
         }
     }
-    let stem = req.query.stem;
-    if (typeof stem !== 'undefined') {
-        let stems = guestStems(word);
-        // console.log(stems);
-        for (let stem of stems) {
-            dictItem = await Dict.coll().findOne({word: stem});
-            if (dictItem) {
-                return res.json(dictItem);
+    let getBase = req.query.base;
+    if (typeof getBase !== 'undefined') {
+        let bases = guestBaseForms(word);
+        // console.log(bases);
+        for (let base of bases) {
+            entry = await Dict.coll().findOne({word: base});
+            if (entry) {
+                return res.json(entry);
             }
         }
     }
-    res.json(dictItem);
+    res.json(entry);
 }
 
 async function createAsync(req, res, next) {
-    let dictItem = extractFields(req, Dict.fields.createFields);
-    let word = dictItem.word;
+    let entry = extractFields(req, Dict.fields.createFields);
+    let word = entry.word;
     if (!word) {
         // sendError(req, res)('missing WORD');
         // return;
@@ -142,25 +104,25 @@ async function createAsync(req, res, next) {
     }
     let existed = await Dict.coll().findOne({word}, {word: 1});
     if (existed) {
-        await Dict.update(existed._id, dictItem);
+        await Dict.update(existed._id, entry);
         res.send({_id: existed._id});
     } else {
-        if (typeof dictItem.explain === 'undefined') {
-            dictItem.explain = '';
+        if (typeof entry.explain === 'undefined') {
+            entry.explain = '';
         }
-        await Dict.create(dictItem);
-        res.send(dictItem);
+        await Dict.create(entry);
+        res.send(entry);
     }
 }
 
 async function updateAsync(req, res, next) {
-    let dictItem = extractFields(req, Dict.fields.updateFields);
+    let entry = extractFields(req, Dict.fields.updateFields);
     let idOrWord = req.params._id;
     let result;
     if (isId(idOrWord)) {
-        result = await Dict.update(req.params._id, dictItem);
+        result = await Dict.update(req.params._id, entry);
     } else {
-        result = await Dict.coll().updateOne({word: idOrWord}, dictItem);
+        result = await Dict.coll().updateOne({word: idOrWord}, entry);
     }
     sendMgResult(res, result);
 }
@@ -179,71 +141,72 @@ async function destroyAsync(req, res, next) {
 
 
 async function loadAWord(word) {
-    let dictItem = await loadAWordOnTheFly(word);
+    let entry = await loadAWordOnTheFly(word);
     console.log('fetched', word);
     let existed = await Dict.coll().findOne({word});
     if (existed) {
-        await Dict.update(existed._id, dictItem);
-        dictItem._id = existed._id;
+        await Dict.update(existed._id, entry);
+        entry._id = existed._id;
     } else {
-        await Dict.create(dictItem);
+        await Dict.create(entry);
     }
-    return dictItem;
+    return entry;
 }
 
 async function getBasicAsync(req, res, next) {
-    let fields = {_id: 0, word: 1, categories: 1};
+    let fields = {_id: 0, word: 1, explain: 1, categories: 1, baseForms: 1};
 
     let loadId = typeof req.query._id !== 'undefined';
-    let loadExplain = typeof req.query.explain !== 'undefined';
     let loadNextItemId = typeof req.query.nextItemId !== 'undefined';
     if (loadId) {
         fields._id = 1;
-    }
-    if (loadExplain) {
-        fields.explain = 1;
     }
     if (loadNextItemId) {
         fields.nextItemId = 1;
     }
     let word = req.params.word;
-    let dictItem = await Dict.coll().findOne({word}, {fields});
-    if (dictItem) {
-        return res.json(dictItem);
+    let entry = await Dict.coll().findOne({word}, {fields});
+    if (entry) {
+        return res.json(entry);
     }
     let loadOnTheFly = req.query.lotf;
     if (typeof loadOnTheFly !== 'undefined') {
-        dictItem = await loadAWord(word);
-        if (dictItem) {
-            let odi = dictItem;
-            dictItem = {
+        entry = await loadAWord(word);
+        if (entry) {
+            let odi = entry;
+            entry = {
                 word,
-                categories: odi.categories
+                explain: odi.explain,
+                categories: odi.categories,
+                baseForms: odi.baseForms
             };
             if (loadId) {
-                dictItem._id = odi._id;
-            }
-            if (loadExplain) {
-                dictItem.explain = odi.explain;
+                entry._id = odi._id;
             }
             if (loadNextItemId) {
-                dictItem.nextItemId = odi.nextItemId;
+                entry.nextItemId = odi.nextItemId;
             }
-            return res.json(dictItem);
+            return res.json(entry);
         }
     }
-    let stem = req.query.stem;
-    if (typeof stem !== 'undefined') {
-        let stems = guestStems(word);
-        // console.log(stems);
-        for (let stem of stems) {
-            dictItem = await Dict.coll().findOne({word: stem}, {fields});
-            if (dictItem) {
-                return res.json(dictItem);
+    let getBase = req.query.base;
+    if (typeof getBase !== 'undefined') {
+        let bases = guestBaseForms(word);
+        // console.log(bases);
+        for (let base of bases) {
+            entry = await Dict.coll().findOne({word: base}, {fields});
+            if (entry) {
+                return res.json(entry);
             }
         }
     }
-    res.json(dictItem);
+    res.json(entry);
+}
+
+async function getCategories(req, res, next) {
+    let word = req.params.word;
+    let entry = await Dict.coll().findOne({word}, {_id: 0, categories: 1});
+    res.json(entry ? entry.categories : null);
 }
 
 function updateCategories(req, res, next) {
@@ -261,6 +224,7 @@ function updateCategories(req, res, next) {
 
 router.get('/search/:key', search);
 router.get('/:word/basic', wrapAsyncOne(getBasicAsync));
+router.get('/:word/categories', wrapAsyncOne(getCategories));
 router.patch('/:word/categories', updateCategories);
 
 let [show, create, update, destroy] =

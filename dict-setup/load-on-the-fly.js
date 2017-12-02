@@ -21,8 +21,7 @@ function loadAWord(word, baseUrl, parser, nextItemId) {
 
             setMeanings(dictItem, meanings, detailMeanings, null, nextItemId);
 
-            let wordsFormOf = {};
-            setForms(dictItem, wordForms, wordsFormOf);
+            setForms(dictItem, wordForms);
             setPhonetics(dictItem, phonetics);
             dictItem.phrases = phrases;
 
@@ -37,7 +36,7 @@ function loadAWord(word, baseUrl, parser, nextItemId) {
 function loadAWordOnTheFly(word) {
 
     let hcPromise = loadAWord(word, hcBaseUrl, hcParser);
-    let ydPromise = loadAWord(word, ydBaseUrl, ydParser, 71);
+    let ydPromise = loadAWord(word, ydBaseUrl, ydParser, 201);
 
     return Promise.all([hcPromise, ydPromise])
         .then(([dictItemHc, dictItemYd]) => {
@@ -54,6 +53,7 @@ function loadAWordOnTheFly(word) {
             delete dictItem.complete;
             dictItem.simpleYd = dictItemYd.simple;
             dictItem.completeYd = dictItemYd.complete;
+            dictItem.phrasesYd = dictItemYd.phrases;
             return dictItem;
         });
 

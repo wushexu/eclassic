@@ -4,6 +4,7 @@ const {setMeanings, setForms, setPhonetics} = require('./set-dict-item');
 const eachOfSeries = require('async/eachOfSeries');
 const ensureAsync = require('async/ensureAsync');
 let request = require('request');
+let uniq = require('lodash/uniq');
 
 request = request.defaults({
     //keepAlive
@@ -37,7 +38,8 @@ function loadDict(dataBaseDir, options) {
 
     let {
         meaningFieldPostfix, nextItemId,
-        loadPhonetics, loadWordForms, loadPhrases
+        loadPhonetics, loadWordForms,
+        loadPhrases, phrasesPostfix
     } = options;
 
     let wordCount = 0;
@@ -46,12 +48,12 @@ function loadDict(dataBaseDir, options) {
     let wordObjectBaseDir = `${dataBaseDir}/word-objects`;
     let wordGenerator = wordsToProcess(wordObjectBaseDir);
 
-    let wordsFormOf = {};
+    let baseFormsMap = {};
 
     function loadWord() {
         let {value: wordObj, done} = wordGenerator.next();
         if (!wordObj) {
-            afterLoadWord();
+            loadBaseForms(baseFormsMap);
             return;
         }
         // console.log(wordObj);
@@ -61,13 +63,17 @@ function loadDict(dataBaseDir, options) {
 
         setMeanings(dictItem, simple, complete, meaningFieldPostfix, nextItemId);
         if (loadWordForms !== false) {
-            setForms(dictItem, wordForms, wordsFormOf);
+            setForms(dictItem, wordForms, baseFormsMap);
         }
         if (loadPhonetics !== false) {
             setPhonetics(dictItem, phonetics);
         }
         if (phrases && loadPhrases !== false) {
-            dictItem.phrases = phrases;
+            if (phrasesPostfix) {
+                dictItem['phrases' + phrasesPostfix] = phrases;
+            } else {
+                dictItem.phrases = phrases;
+            }
         }
 
         // console.log(dictItem);
@@ -86,24 +92,26 @@ function loadDict(dataBaseDir, options) {
         });
     }
 
-    function afterLoadWord() {
-        eachOfSeries(wordsFormOf, ensureAsync(function (formOf, word, callback) {
-            request.post(dictUrl, {json: {word, formOf}}, (err, res, body) => {
-                if (err) {
-                    callback(err);
-                } else {
-                    let elapseMs = Date.now() - startMs;
-                    console.log(word, formOf, elapseMs, 'ms.');
-                    callback();
-                }
-            });
-        }), function (err) {
-            if (err) console.error(err.message);
-        });
-    }
-
     loadWord();
 }
 
 
-module.exports = {loadDict};
+function loadBaseForms(baseFormsMap) {
+    let startMs = Date.now();
+    eachOfSeries(baseFormsMap, ensureAsync(function (baseForms, word, callback) {
+        baseForms = uniq(baseForms);
+        request.post(dictUrl, {json: {word, baseForms}}, (err, res, body) => {
+            if (err) {
+                callback(err);
+            } else {
+                let elapseMs = Date.now() - startMs;
+                console.log(word, baseForms, elapseMs, 'ms.');
+                callback();
+            }
+        });
+    }), function (err) {
+        if (err) console.error(err.message);
+    });
+}
+
+module.exports = {loadDict, wordsToProcess, loadBaseForms};

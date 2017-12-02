@@ -68,7 +68,7 @@ function parsePages(dataBaseDir, pageParser) {
 
             wordCount++;
             let elapseMs = Date.now() - startMs;
-            console.log(word, wordCount, 'words.', elapseMs, 'ms.');
+            console.log(`${word}, ${wordCount} words, ${elapseMs} ms.`);
             parsePage();
         }).catch(err => {
             console.error(value);
@@ -80,4 +80,4 @@ function parsePages(dataBaseDir, pageParser) {
 }
 
 
-module.exports = {parsePages};
+module.exports = {parsePages, pagesToProcess};
