@@ -2,24 +2,24 @@ const {JSDOM} = require("jsdom");
 const config = require('./config');
 const hcParser = require('./lib/page-parser-hc');
 const ydParser = require('./lib/page-parser-yd');
-const {setMeanings, setForms, setPhonetics} = require('./lib/set-dict-item');
+const {setMeanings, setForms, setPhonetics, mergeDictItems} = require('./lib/set-dict-item');
 
 let {hcBaseUrl, ydBaseUrl} = config;
 
-function loadAWord(word, baseUrl, parser, nextItemId) {
+function loadAWord(word, baseUrl, parser) {
     return new Promise(function (resolve, reject) {
         let url = `${baseUrl}/${word}`;
         JSDOM.fromURL(url).then(dom => {
             let doc = dom.window.document;
             let meanings = parser.parseBasic(doc);
-            let detailMeanings = parser.parseDetail(doc);
+            let detailMeanings = parser.parseDetail(doc, word);
             let wordForms = parser.parseWordForms(doc);
             let phonetics = parser.parsePhonetics(doc);
-            let phrases = parser.parsePhrases(doc);
+            let phrases = parser.parsePhrases(doc, word);
 
             let dictItem = {word};
 
-            setMeanings(dictItem, meanings, detailMeanings, null, nextItemId);
+            setMeanings(dictItem, meanings, detailMeanings, null);
 
             setForms(dictItem, wordForms);
             setPhonetics(dictItem, phonetics);
@@ -36,27 +36,12 @@ function loadAWord(word, baseUrl, parser, nextItemId) {
 function loadAWordOnTheFly(word) {
 
     let hcPromise = loadAWord(word, hcBaseUrl, hcParser);
-    let ydPromise = loadAWord(word, ydBaseUrl, ydParser, 201);
+    let ydPromise = loadAWord(word, ydBaseUrl, ydParser);
 
     return Promise.all([hcPromise, ydPromise])
         .then(([dictItemHc, dictItemYd]) => {
-            if (!dictItemHc.explain) {
-                return dictItemYd;
-            }
-            if (!dictItemYd.explain) {
-                return dictItemHc;
-            }
-            let dictItem = dictItemHc;
-            dictItem.simpleHc = dictItem.simple;
-            dictItem.completeHc = dictItem.complete;
-            delete dictItem.simple;
-            delete dictItem.complete;
-            dictItem.simpleYd = dictItemYd.simple;
-            dictItem.completeYd = dictItemYd.complete;
-            dictItem.phrasesYd = dictItemYd.phrases;
-            return dictItem;
+            return mergeDictItems(dictItemHc, dictItemYd);
         });
-
 }
 
 // loadAWordOnTheFly('Carleton').then(dictItem => {

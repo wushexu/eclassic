@@ -4,7 +4,7 @@ const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../commo
 
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
-let {guestBaseForms} = require('../dict-setup/lib/word-forms');
+let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 let {loadAWordOnTheFly} = require('../dict-setup/load-on-the-fly');
 
 
@@ -60,8 +60,11 @@ async function showAsync(req, res, next) {
     }
     let word = idOrWord;
     entry = await Dict.coll().findOne({word});
+    if (!entry && word.toLowerCase() !== word) {
+        entry = await Dict.coll().findOne({word: word.toLowerCase()});
+    }
     if (entry) {
-        if (!entry.explain) {
+        if (!entry.simple || entry.simple.length === 0) {
             let bfs = entry.baseForms;
             if (bfs && bfs.length === 1) {
                 let baseForm = bfs[0];
@@ -91,6 +94,14 @@ async function showAsync(req, res, next) {
             }
         }
     }
+    let getStem = req.query.stem;
+    if (typeof getStem !== 'undefined') {
+        let stem = guestStem(word);
+        if (stem) {
+            entry = await Dict.coll().findOne({word: stem});
+        }
+    }
+
     res.json(entry);
 }
 
@@ -107,8 +118,8 @@ async function createAsync(req, res, next) {
         await Dict.update(existed._id, entry);
         res.send({_id: existed._id});
     } else {
-        if (typeof entry.explain === 'undefined') {
-            entry.explain = '';
+        if (typeof entry.simple === 'undefined') {
+            entry.simple = null;
         }
         await Dict.create(entry);
         res.send(entry);
@@ -154,7 +165,7 @@ async function loadAWord(word) {
 }
 
 async function getBasicAsync(req, res, next) {
-    let fields = {_id: 0, word: 1, explain: 1, categories: 1, baseForms: 1};
+    let fields = {_id: 0, word: 1, simple: 1, categories: 1, baseForms: 1};
 
     let loadId = typeof req.query._id !== 'undefined';
     let loadNextItemId = typeof req.query.nextItemId !== 'undefined';
@@ -176,7 +187,7 @@ async function getBasicAsync(req, res, next) {
             let odi = entry;
             entry = {
                 word,
-                explain: odi.explain,
+                simple: odi.simple,
                 categories: odi.categories,
                 baseForms: odi.baseForms
             };
@@ -187,17 +198,6 @@ async function getBasicAsync(req, res, next) {
                 entry.nextItemId = odi.nextItemId;
             }
             return res.json(entry);
-        }
-    }
-    let getBase = req.query.base;
-    if (typeof getBase !== 'undefined') {
-        let bases = guestBaseForms(word);
-        // console.log(bases);
-        for (let base of bases) {
-            entry = await Dict.coll().findOne({word: base}, {fields});
-            if (entry) {
-                return res.json(entry);
-            }
         }
     }
     res.json(entry);

@@ -37,7 +37,7 @@ function* wordsToProcess(wordObjectBaseDir) {
 function loadDict(dataBaseDir, options) {
 
     let {
-        meaningFieldPostfix, nextItemId,
+        meaningFieldPostfix,
         loadPhonetics, loadWordForms,
         loadPhrases, phrasesPostfix
     } = options;
@@ -61,7 +61,7 @@ function loadDict(dataBaseDir, options) {
         let {word, simple, complete, wordForms, phonetics, phrases} = wordObj;
         let dictItem = {word};
 
-        setMeanings(dictItem, simple, complete, meaningFieldPostfix, nextItemId);
+        setMeanings(dictItem, simple, complete, meaningFieldPostfix);
         if (loadWordForms !== false) {
             setForms(dictItem, wordForms, baseFormsMap);
         }

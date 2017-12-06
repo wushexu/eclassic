@@ -2,11 +2,11 @@ const {getDb, simpleCurd} = require('./db');
 
 module.exports = simpleCurd('dict');
 
-let requiredFields = ['word', 'explain'];
-let updateFields = ['explain', 'simpleHc', 'simpleYd',
+let requiredFields = ['word', 'simple'];
+let updateFields = ['simple', 'simpleHc', 'simpleYd',
     'categories', 'complete', 'completeHc', 'completeYd',
-    'nextItemId', 'phonetics', 'forms', 'baseForms',
-    'phrases', 'phrases2', /*'usageTips'*/];
+    'nextItemId', 'phonetics', 'forms', 'baseForms', 'wordLength', 'wordCount', 'isPhrase',
+    'phrases'/*, 'phrases2', 'usageTips'*/];
 let createFields = updateFields.concat(['word']);
 
 module.exports.fields = {requiredFields, updateFields, createFields};

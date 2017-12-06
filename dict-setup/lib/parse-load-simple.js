@@ -61,7 +61,7 @@ function parseLoadSimple(dataBaseDir, pageParser, simplePostfix) {
 
         let dictItem = {word};
 
-        dictItem.explain = meanings.map(mi => `${mi.pos}${mi.exp}`).join('\n');
+        // dictItem.explain = meanings.map(mi => `${mi.pos}${mi.exp}`).join('\n');
         if (simplePostfix) {
             dictItem['simple' + simplePostfix] = meanings;
         } else {

@@ -49,10 +49,10 @@ function parsePages(dataBaseDir, pageParser) {
                 parsePage();
                 return;
             }
-            let detailMeanings = pageParser.parseDetail(doc);
+            let detailMeanings = pageParser.parseDetail(doc, word);
             let wordForms = pageParser.parseWordForms(doc);
             let phonetics = pageParser.parsePhonetics(doc);
-            let phrases = pageParser.parsePhrases(doc);
+            let phrases = pageParser.parsePhrases(doc, word);
 
             let wordObj = {
                 word,

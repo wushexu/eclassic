@@ -1,4 +1,3 @@
-
 function guestBaseForms(word) {
     let stems = [];
     let len = word.length;
@@ -38,6 +37,17 @@ function guestBaseForms(word) {
         }
     }
     return stems;
+}
+
+function guestStem(word) {
+    let len = word.length;
+    let affixes = ['ly', 'ness', 'ful', 'ment', 'ness', 'or', 'ion'];
+    for (let affix of affixes) {
+        if (word.endsWith(affix)) {
+            return word.substring(0, len - affix.length);
+        }
+    }
+    return null;
 }
 
 function regularPl(word) {
@@ -120,4 +130,4 @@ function regularPresentP(word) {
     return word + 'ing';
 }
 
-module.exports = {guestBaseForms, regularPl, regularTPS, regularPast, regularPresentP};
+module.exports = {guestBaseForms, guestStem, regularPl, regularTPS, regularPast, regularPresentP};

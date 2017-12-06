@@ -1,32 +1,26 @@
 let uniq = require('lodash/uniq');
+let union = require('lodash/union');
 
 // let {regularPl, regularTPS, regularPast, regularPresentP} = require('./word-forms');
 
-function setMeanings(dictItem, simple, complete, fieldPostfix, nextItemId) {
+function setMeanings(dictItem, simple, complete, fieldPostfix) {
 
-    dictItem.explain = simple.map(mi => `${mi.pos}${mi.exp}`).join('\n');
+    // dictItem.explain = simple.map(mi => `${mi.pos}${mi.exp}`).join('\n');
 
-    if (!nextItemId) {
-        nextItemId = 1;
+    if (simple.length === 0) {
+        simple = null;
     }
-    let completeMeanings = [];
-
-    for (let {pos, items} of complete) {
-        let itemObjs = [];
-        for (let meaningItem of items) {
-            itemObjs.push({id: nextItemId, exp: meaningItem});
-            nextItemId++;
-        }
-        completeMeanings.push({pos, items: itemObjs});
+    if (complete.length === 0) {
+        complete = null;
     }
+
     if (fieldPostfix) {
         dictItem['simple' + fieldPostfix] = simple;
-        dictItem['complete' + fieldPostfix] = completeMeanings;
+        dictItem['complete' + fieldPostfix] = complete;
     } else {
         dictItem.simple = simple;
-        dictItem.complete = completeMeanings;
+        dictItem.complete = complete;
     }
-    dictItem.nextItemId = nextItemId;
 }
 
 function setForms(dictItem, wordForms, baseFormsMap) {
@@ -56,6 +50,9 @@ function setForms(dictItem, wordForms, baseFormsMap) {
         // 简写符号:
         // 原形:
         for (let [name, form] of wordForms) {
+            if (form === word) {
+                continue;
+            }
             let baseForms = baseFormsMap[form];
             if (!(baseForms instanceof Array)) {
                 baseForms = baseFormsMap[form] = [];
@@ -77,4 +74,33 @@ function setPhonetics(dictItem, phonetics) {
     }
 }
 
-module.exports = {setMeanings, setForms, setPhonetics};
+function mergeDictItems(dictItemHc, dictItemYd) {
+    if (!dictItemHc || !dictItemHc.simple) {
+        return dictItemYd;
+    }
+    if (!dictItemYd || !dictItemYd.simple) {
+        console.log(dictItemHc.word, 'missing Yd');
+        return dictItemHc;
+    }
+    let dictItem = dictItemHc;
+    if (!dictItem.phonetics) {
+        dictItem.phonetics = dictItemYd.phonetics;
+    }
+    dictItem.simpleHc = dictItem.simple;
+    dictItem.completeHc = dictItem.complete;
+    dictItem.complete = [];
+    dictItem.simpleYd = dictItemYd.simple;
+    dictItem.completeYd = dictItemYd.complete;
+    dictItem.phrases = union(dictItem.phrases, dictItemYd.phrases);
+
+    let word = dictItem.word;
+    let wordLength = word.length;
+    let wordCount = word.split(' ').length;
+    dictItem.wordLength = wordLength;
+    dictItem.wordCount = wordCount;
+    dictItem.isPhrase = wordCount > 1;
+
+    return dictItem;
+}
+
+module.exports = {setMeanings, setForms, setPhonetics, mergeDictItems};

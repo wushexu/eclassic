@@ -109,7 +109,12 @@ function parsePhrases(doc) {
     let phrases = [];
     let phbs = doc.querySelectorAll('div.phrase > dl > dt > b');
     for (let phb of phbs) {
-        let ph = phb.textContent;
+        // word<sup>1</sup>
+        let pht = phb.childNodes[0];
+        if (!pht) {
+            continue;
+        }
+        let ph = pht.textContent;
         if (ph.indexOf('(') > 0) {
             ph = ph.substring(0, ph.indexOf('('));
         }

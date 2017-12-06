@@ -16,30 +16,50 @@ function parseBasic(doc) {
     return meanings;
 }
 
-function parseDetail(doc) {
+function parseDetail(doc, word) {
     let detailMeanings = [];
-    let posLis = doc.querySelectorAll('#authDictTrans > ul > li');
-    for (let posLi of posLis) {
-        let posSpan = posLi.children[0];
-        if (!posSpan || posSpan.tagName !== 'SPAN') {
+    let entries = doc.querySelectorAll('#authDictTrans > ul');
+    for (let entry of entries) {
+        let h4 = entry.previousElementSibling;
+        if (!h4 || h4.tagName !== 'H4') {
             continue;
         }
-        let pos = posSpan.textContent.trim();
-        if (!pos.endsWith('.')) {
+        let title = h4.childNodes[0];
+        if (!title) {
             continue;
         }
-        let meaningsUl = posLi.children[1];
-        if (!meaningsUl || meaningsUl.tagName !== 'UL') {
+        title = title.textContent.trim();
+        if (title !== word) {
             continue;
         }
-        let meaningSpans = meaningsUl.querySelectorAll('li span');
-        let items = [];
-        for (let ms of meaningSpans) {
-            let item = ms.textContent.trim();
-            items.push(item);
+        let posLis = entry.querySelectorAll('li');
+        for (let posLi of posLis) {
+            let posSpan = posLi.children[0];
+            if (!posSpan || posSpan.tagName !== 'SPAN') {
+                continue;
+            }
+            let pos = posSpan.textContent.trim();
+            if (!pos.endsWith('.')) {
+                continue;
+            }
+            let meaningsUl = posLi.children[1];
+            if (!meaningsUl || meaningsUl.tagName !== 'UL') {
+                continue;
+            }
+            let meaningSpans = meaningsUl.querySelectorAll('li span');
+            let items = [];
+            for (let ms of meaningSpans) {
+                let item = ms.textContent.trim();
+                if (item.endsWith('：')) {
+                    item = item.substring(0, item.length - 1);
+                }
+                items.push(item);
+            }
+            detailMeanings.push({pos, items});
         }
-        detailMeanings.push({pos, items});
     }
+
+
     return detailMeanings;
 }
 
@@ -70,40 +90,55 @@ function parsePhonetics(doc) {
     return phonetics;
 }
 
-function parsePhrases(doc) {
+function parsePhrases(doc, word) {
     let phrases = [];
-    let posLis = doc.querySelectorAll('#authDictTrans > ul > li');
-    for (let posLi of posLis) {
-        let posSpan = posLi.children[0];
-        if (!posSpan || posSpan.tagName !== 'SPAN') {
+    let entries = doc.querySelectorAll('#authDictTrans > ul');
+    for (let entry of entries) {
+        let h4 = entry.previousElementSibling;
+        if (!h4 || h4.tagName !== 'H4') {
             continue;
         }
-        let pos = posSpan.textContent.trim();
-        if (pos !== '短语:') {
+        let title = h4.childNodes[0];
+        if (!title) {
             continue;
         }
-        let phrasesUl = posLi.children[1];
-        if (!phrasesUl || phrasesUl.tagName !== 'UL') {
+        title = title.textContent.trim();
+        if (title !== word) {
             continue;
         }
-        let phraseLis = phrasesUl.children;
-        for (let li of phraseLis) {
-            let phraseExp = li.textContent.trim();
-            if (phraseExp.indexOf('\n') >= 0) {
-                phraseExp = phraseExp.substring(0, phraseExp.indexOf('\n'));
+        let posLis = entry.querySelectorAll('li');
+        for (let posLi of posLis) {
+            let posSpan = posLi.children[0];
+            if (!posSpan || posSpan.tagName !== 'SPAN') {
+                continue;
             }
-            if (phraseExp.indexOf('(') >= 0) {
-                phraseExp = phraseExp.replace(/\([^)]+\)/g, ' ');
-                phraseExp = phraseExp.replace(/  +/g, ' ');
+            let pos = posSpan.textContent.trim();
+            if (pos !== '短语:') {
+                continue;
             }
-            let matcher = phraseExp.match(/^([a-zA-Z ]+)/);
-            if (matcher) {
-                let phrase = matcher[1];
-                if (phrase) {
-                    phrase = phrase.trim();
-                    let words = phrase.split(' ');
-                    if (words.length >= 2) {
-                        phrases.push(phrase);
+            let phrasesUl = posLi.children[1];
+            if (!phrasesUl || phrasesUl.tagName !== 'UL') {
+                continue;
+            }
+            let phraseLis = phrasesUl.children;
+            for (let li of phraseLis) {
+                let exp = li.textContent.trim();
+                if (exp.indexOf('\n') >= 0) {
+                    exp = exp.substring(0, exp.indexOf('\n'));
+                }
+                if (exp.indexOf('(') >= 0) {
+                    exp = exp.replace(/\([^)]+\)/g, ' ');
+                    exp = exp.replace(/  +/g, ' ');
+                }
+                let matcher = exp.match(/^([a-zA-Z ]+)/);
+                if (matcher) {
+                    let phrase = matcher[1];
+                    if (phrase) {
+                        phrase = phrase.trim();
+                        let words = phrase.split(' ');
+                        if (words.length >= 2) {
+                            phrases.push(phrase);
+                        }
                     }
                 }
             }

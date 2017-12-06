@@ -1,20 +1,20 @@
 // load('xxx.js')
 
-db.dict.find({
-        $or: [
-            {forms: {'$exists': true}},
-            {formOf: {'$exists': true}}]
-    },
-    {word: 1})
-    // .skip(10).limit(1)
+db.dict.find(
+    {baseForms: {'$exists': true}},
+    {word: 1, baseForms: 1})//.limit(10)
     .forEach(function (de) {//dict entry
         // printjson(de);
-        // db.dict.save(de);
-        db.dict.update({_id: de._id}, {$unset: {forms: '', formOf: ''}});
-    });
+        let {word, baseForms} = de;
+        if (baseForms === null) {
+            return;
+        }
+        if (baseForms.indexOf(word) === -1) {
+            return;
+        }
+        print(word);
+        // print(baseForms);
+        baseForms = baseForms.filter(f => f !== word);
 
-// db.dict.updateMany({
-//     $or: [
-//         {forms: {'$exists': true}},
-//         {formOf: {'$exists': true}}]
-// }, {$unset: {forms: '', formOf: ''}});
+        db.dict.update({_id: de._id}, {$set: {baseForms}});
+    });
