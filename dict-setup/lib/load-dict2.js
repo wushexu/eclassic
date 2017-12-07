@@ -1,20 +1,12 @@
 const fs = require('fs-extra');
-const config = require('../config');
 const {setMeanings, setForms, setPhonetics, mergeDictItems} = require('./set-dict-item');
-let request = require('request');
-const {loadBaseForms} = require('./load-dict');
+const {connectDb, getDb} = require('../../models/db');
 
-request = request.defaults({
-    //keepAlive
-    forever: true
-});
-
-let {dictUrl} = config;
 
 function* wordsToProcess2(wordObjectDirHc, wordObjectDirYd) {
 
     let dirs = fs.readdirSync(wordObjectDirHc);
-    dirs = dirs.slice(11, 14);
+    // dirs = dirs.slice(11, 14);
     for (let dir of dirs) {
         if (!/^[a-z][a-z]$/.test(dir)) {
             continue;
@@ -37,8 +29,21 @@ function* wordsToProcess2(wordObjectDirHc, wordObjectDirYd) {
     }
 }
 
-function loadDict2(hcDataBaseDir, ydDataBaseDir) {
 
+function loadBaseForms2(baseFormsMap) {
+    let startMs = Date.now();
+    eachOfSeries(baseFormsMap, async function (baseForms, word, callback) {
+        baseForms = uniq(baseForms);
+        await createAsync({word, baseForms});
+        let elapseMs = Date.now() - startMs;
+        console.log(word, baseForms, elapseMs, 'ms.');
+        callback();
+    }, function (err) {
+        if (err) console.error(err.message);
+    });
+}
+
+function loadDict1(hcDataBaseDir, ydDataBaseDir) {
 
     let wordCount = 0;
     let startMs = Date.now();
@@ -60,10 +65,10 @@ function loadDict2(hcDataBaseDir, ydDataBaseDir) {
         return dictItem;
     };
 
-    function loadWord() {
+    async function loadWord() {
         let {value, done} = wordGenerator.next();
         if (!value) {
-            loadBaseForms(baseFormsMap);
+            loadBaseForms2(baseFormsMap);
             return;
         }
 
@@ -79,19 +84,35 @@ function loadDict2(hcDataBaseDir, ydDataBaseDir) {
         let elapseMs = Date.now() - startMs;
         console.log(dictItem.word, wordCount, 'words.', elapseMs, 'ms.');
 
-        request.post(dictUrl, {json: dictItem}, (err, res, body) => {
-            if (err) {
-                console.log(value);
-                console.log(err);
-            } else {
-                // console.log(body);
-                loadWord();
-            }
-        });
+        await createAsync(dictItem);
+        loadWord();
     }
 
     loadWord();
 }
 
 
-module.exports = {loadDict2, loadBaseForms};
+let dictColl = null;
+
+async function createAsync(entry) {
+    let word = entry.word;
+    if (!word) {
+        throw new Error('missing WORD');
+    }
+    let existed = await dictColl.findOne({word}, {word: 1});
+    if (existed) {
+        await dictColl.updateOne({'_id': existed._id}, {'$set': entry});
+    } else {
+        await dictColl.insertOne(entry);
+    }
+}
+
+function loadDict2(hcDataBaseDir, ydDataBaseDir) {
+
+    connectDb().then(() => {
+        dictColl = getDb().collection('dict');
+        loadDict1(hcDataBaseDir, ydDataBaseDir);
+    });
+}
+
+module.exports = {loadDict2};

@@ -82,7 +82,7 @@ function sendMgResult(res, r) {
     if (r.result) {
         r = r.result;
     }
-    console.log('Mongo Result: ' + JSON.stringify(r));
+    // console.log('Mongo Result: ' + JSON.stringify(r));
     res.send({ok: r.ok, n: r.n});
 }
 

@@ -109,8 +109,6 @@ async function createAsync(req, res, next) {
     let entry = extractFields(req, Dict.fields.createFields);
     let word = entry.word;
     if (!word) {
-        // sendError(req, res)('missing WORD');
-        // return;
         throw new Error('missing WORD');
     }
     let existed = await Dict.coll().findOne({word}, {word: 1});
@@ -118,9 +116,6 @@ async function createAsync(req, res, next) {
         await Dict.update(existed._id, entry);
         res.send({_id: existed._id});
     } else {
-        if (typeof entry.simple === 'undefined') {
-            entry.simple = null;
-        }
         await Dict.create(entry);
         res.send(entry);
     }

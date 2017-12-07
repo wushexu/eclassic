@@ -92,6 +92,10 @@ function mergeDictItems(dictItemHc, dictItemYd) {
     dictItem.simpleYd = dictItemYd.simple;
     dictItem.completeYd = dictItemYd.complete;
     dictItem.phrases = union(dictItem.phrases, dictItemYd.phrases);
+    dictItem.phraseCount = dictItem.phrases.length;
+    if (dictItem.phrases.length === 0) {
+        dictItem.phrases = null;
+    }
 
     let word = dictItem.word;
     let wordLength = word.length;
