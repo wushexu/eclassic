@@ -1,12 +1,15 @@
 const fs = require('fs-extra');
 const {setMeanings, setForms, setPhonetics, mergeDictItems} = require('./set-dict-item');
 const {connectDb, getDb} = require('../../models/db');
+const eachOfSeries = require('async/eachOfSeries');
+const ensureAsync = require('async/ensureAsync');
+let uniq = require('lodash/uniq');
 
 
 function* wordsToProcess2(wordObjectDirHc, wordObjectDirYd) {
 
     let dirs = fs.readdirSync(wordObjectDirHc);
-    // dirs = dirs.slice(11, 14);
+    // dirs = dirs.slice(22, 24);
     for (let dir of dirs) {
         if (!/^[a-z][a-z]$/.test(dir)) {
             continue;
@@ -30,20 +33,20 @@ function* wordsToProcess2(wordObjectDirHc, wordObjectDirYd) {
 }
 
 
-function loadBaseForms2(baseFormsMap) {
+function loadBaseForms2(baseFormsMap, onDone) {
     let startMs = Date.now();
-    eachOfSeries(baseFormsMap, async function (baseForms, word, callback) {
+    eachOfSeries(baseFormsMap, async function (baseForms, word) {
         baseForms = uniq(baseForms);
         await createAsync({word, baseForms});
         let elapseMs = Date.now() - startMs;
         console.log(word, baseForms, elapseMs, 'ms.');
-        callback();
     }, function (err) {
         if (err) console.error(err.message);
+        if (onDone) onDone();
     });
 }
 
-function loadDict1(hcDataBaseDir, ydDataBaseDir) {
+function loadDict1(hcDataBaseDir, ydDataBaseDir, onDone) {
 
     let wordCount = 0;
     let startMs = Date.now();
@@ -68,7 +71,7 @@ function loadDict1(hcDataBaseDir, ydDataBaseDir) {
     async function loadWord() {
         let {value, done} = wordGenerator.next();
         if (!value) {
-            loadBaseForms2(baseFormsMap);
+            loadBaseForms2(baseFormsMap, onDone);
             return;
         }
 
@@ -110,8 +113,9 @@ async function createAsync(entry) {
 function loadDict2(hcDataBaseDir, ydDataBaseDir) {
 
     connectDb().then(() => {
-        dictColl = getDb().collection('dict');
-        loadDict1(hcDataBaseDir, ydDataBaseDir);
+        let db = getDb();
+        dictColl = db.collection('dict');
+        loadDict1(hcDataBaseDir, ydDataBaseDir, db.close.bind(db));
     });
 }
 
