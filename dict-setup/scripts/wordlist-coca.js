@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const config = require('../config');
-const {loadList, loadAsMap,uniqueLines} = require('../lib/word-list');
+const {loadList, loadAsMap, uniqueLines} = require('../lib/word-list');
 
 let {vocabularyDir} = config;
 

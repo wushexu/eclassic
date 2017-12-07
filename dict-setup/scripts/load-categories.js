@@ -1,4 +1,5 @@
-const {loadCategory} = require('../lib/load-category');
+const {loadCategory, loadAllCategories} = require('../lib/load-category');
+const {loadCategory2, loadAllCategories2} = require('../lib/load-category2');
 
 
 let wordPattern = /^[a-zA-Z][a-zA-Z -]+$/;
@@ -98,3 +99,8 @@ for (let [name, file] of freqFiles) {
 // loadCategory(loadSettings.coca);
 // loadCategory(loadSettings.bnc);
 // loadCategory(loadSettings.anc);
+
+
+// loadCategory2(loadSettings.junior);
+
+loadAllCategories2(loadSettings);

@@ -1,8 +1,10 @@
 const fs = require('fs-extra');
 let request = require('request');
 // const eachOf = require('async/eachOf');
-const eachOf = require('async/eachOfSeries');
+const eachOfSeries = require('async/eachOfSeries');
+const ensureAsync = require('async/ensureAsync');
 const config = require('../config');
+const {loadList} = require('./word-list');
 
 
 request = request.defaults({
@@ -14,17 +16,17 @@ request = request.defaults({
 let {vocabularyDir, dictUrl} = config;
 
 
-function loadCategory(loadSetting) {
+function loadCategory(loadSetting, onDone) {
 
     let wordCount = 0;
     let startMs = Date.now();
 
     let file = `${vocabularyDir}/${loadSetting.file}`;
+    let lines = loadList(file);
 
-    let data = fs.readFileSync(file, 'utf-8');
+    lines = lines.slice(0, 10);
 
-    let lines = data.split(/\r?\n/);
-    eachOf(lines, function (line, index, callback) {
+    eachOfSeries(lines, function (line, index, callback) {
         // if (index > 30) {
         //     return;
         // }
@@ -91,9 +93,19 @@ function loadCategory(loadSetting) {
         let elapseMs = Date.now() - startMs;
         console.log(`${wordCount} words. ${elapseMs} ms.`);
         if (err) console.error(err.message);
+        if (onDone) onDone();
     });
 
 }
 
+function loadAllCategories(loadSettings) {
 
-module.exports = {loadCategory};
+    eachOfSeries(loadSettings, ensureAsync(function (loadSetting, name, callback) {
+        loadCategory(loadSetting, callback);
+    }), function (err) {
+        if (err) console.error(err.message);
+    });
+}
+
+
+module.exports = {loadCategory, loadAllCategories};
