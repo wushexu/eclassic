@@ -23,7 +23,6 @@ let loadSettings = {
         categories: {junior: 2},
         skipCondition: (categories) => categories.junior === 1,
         extractWord: wholeLine
-
     },
     cet4: {
         file: 'wl-cet4.txt',

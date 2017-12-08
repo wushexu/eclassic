@@ -1,38 +1,43 @@
 // load('xxx.js')
 
-db.dict.find()//{$where: 'this.completeYd.length>0'}
-    // .skip(10).limit(1)
+db.dict.find()
+    // .skip(20).limit(50)
     .forEach(function (de) {//dict entry
         // printjson(de);
-        if (de.wordLength) {
-            return;
-        }
 
         let {simpleYd, simpleHc, completeYd, completeHc} = de;
 
-        let nextItemId = 1;
-        let complete = [];
-        let posMap = new Map();
-
-        if (simpleHc) {
-            for (let {pos, exp} of simpleHc) {
-                posMap.set(pos, exp);
-            }
+        if (!completeYd && !completeHc) {
+            return;
         }
-        if (simpleYd) {
-            for (let {pos, exp} of simpleYd) {
-                let exp0 = posMap.get(pos);
-                if (!exp0 || exp0.length > exp.length) {
-                    posMap.set(pos, exp);
+
+        let toUpdate = {};
+        if (simpleHc && completeHc) {
+            for (let posMeanings of completeHc) {
+                let pos = posMeanings.pos;
+                let si = simpleHc.find(si => si.pos === pos);
+                if (si) {
+                    posMeanings.exp = si.exp;
+                } else if (pos === 'v.') {
+                    si = simpleHc.find(si => si.pos === 'vt.');
+                    if (si) {
+                        posMeanings.exp = si.exp;
+                    }
                 }
             }
+            toUpdate.completeHc = completeHc;
+        }
+        if (simpleYd && completeYd) {
+            for (let posMeanings of completeYd) {
+                let pos = posMeanings.pos;
+                let si = simpleYd.find(si => si.pos === pos);
+                if (si) {
+                    posMeanings.exp = si.exp;
+                }
+            }
+            toUpdate.completeYd = completeYd;
         }
 
-        let completeRef = completeHc || completeYd;
-        for (let poses of completeRef) {
-            // let pos = poses.pos;
-        }
         // printjson(de);
-        // db.dict.save(de);
-        db.dict.update({_id: de._id}, {$set: {complete}});
+        db.dict.update({_id: de._id}, {$set: toUpdate});
     });

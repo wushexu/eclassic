@@ -1,8 +1,6 @@
 let uniq = require('lodash/uniq');
 let union = require('lodash/union');
 
-// let {regularPl, regularTPS, regularPast, regularPresentP} = require('./word-forms');
-
 function setMeanings(dictItem, simple, complete, fieldPostfix) {
 
     // dictItem.explain = simple.map(mi => `${mi.pos}${mi.exp}`).join('\n');
@@ -98,9 +96,8 @@ function mergeDictItems(dictItemHc, dictItemYd) {
     }
 
     let word = dictItem.word;
-    let wordLength = word.length;
+    dictItem.wordLength = word.length;
     let wordCount = word.split(' ').length;
-    dictItem.wordLength = wordLength;
     dictItem.wordCount = wordCount;
     dictItem.isPhrase = wordCount > 1;
 

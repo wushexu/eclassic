@@ -24,7 +24,7 @@ function loadCategory(loadSetting, onDone) {
     let file = `${vocabularyDir}/${loadSetting.file}`;
     let lines = loadList(file);
 
-    lines = lines.slice(0, 10);
+    // lines = lines.slice(0, 10);
 
     eachOfSeries(lines, function (line, index, callback) {
         // if (index > 30) {

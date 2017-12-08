@@ -1,40 +1,98 @@
 let express = require('express');
 let router = express.Router();
+let reverse = require('lodash/reverse');
 const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../common/helper');
-
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
 let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 let {loadAWordOnTheFly} = require('../dict-setup/load-on-the-fly');
 
 
-function getLimit(req, defaultLimit) {
+function getLimit(req, defaultLimit, threshold) {
     let limit = req.query['limit'];
     if (!limit || isNaN(limit)) {
         return defaultLimit;
     }
-    return Math.min(parseInt(limit), defaultLimit);
+    limit = parseInt(limit);
+    if (!threshold) {
+        return limit;
+    }
+    return Math.min(limit, threshold);
 }
 
 
 function search(req, res, next) {
     let key = req.params.key;
-    if (!key) {
-        res.send([]);
-        return;
+
+    let searchPrevious = key.startsWith('_');
+    let searchNext = key.endsWith('_');
+    let filter = {word: {}};
+    if (searchPrevious) {
+        key = key.substring(1, key.length);
+        filter.word['$lt'] = key;
+    } else if (searchNext) {
+        key = key.substring(0, key.length - 1);
+        filter.word['$gt'] = key;
+    } else {
+        filter.word['$regex'] = `^${key}.*`;
     }
-    let regex = `^${key}.*`;
+
+    let query = req.query;
+
+    if (typeof query.phrase === 'undefined') {
+        filter.isPhrase = false;
+    }
+    if (typeof query.phraseOnly !== 'undefined') {
+        filter.isPhrase = true;
+    }
+
+    if (query.hc) {
+        filter['categories.hc'] = parseInt(query.hc);
+    }
+    if (typeof query.junior !== 'undefined') {
+        let junior = parseInt(query.junior);
+        if (isNaN(junior)) {
+            filter['categories.junior'] = {$exists: true};
+        } else {
+            filter['categories.junior'] = junior;
+        }
+    }
+    if (typeof query.cet !== 'undefined') {
+        let cet = parseInt(query.cet);
+        if (isNaN(cet)) {
+            filter['categories.cet'] = {$exists: true};
+        } else {
+            filter['categories.cet'] = cet;
+        }
+    }
+
+    let fields = null;
+    if (typeof query.allFields === 'undefined') {
+        fields = {_id: 0, word: 1};
+        if (typeof query._id !== 'undefined') {
+            fields._id = 1;
+        }
+    }
+
     let limit = getLimit(req, 8);
-    Dict.coll().find({word: {$regex: regex}})
-        .project({word: 1, meaning: 1})
-        .limit(limit).toArray()
-        .then(ms => res.send(ms)).catch(next);
+    let cursor = Dict.coll().find(filter)
+        .project(fields)
+        .limit(limit);
+    if (searchPrevious) {
+        cursor = cursor.sort({word: -1});
+    }
+    cursor.toArray().then(ms => {
+        if (searchPrevious) {
+            ms = reverse(ms);
+        }
+        res.send(ms);
+    }).catch(next);
 }
 
 function index(req, res, next) {
 
     let p = Dict.coll().find()
-        .project({word: 1, meaning: 1});
+        .project({word: 1, categories: 1, baseForms: 1});
     let from = req.query['from'];
     if (from) {
         from = parseInt(from) || 1;
@@ -42,7 +100,7 @@ function index(req, res, next) {
             p = p.skip(from - 1);
         }
     }
-    let limit = getLimit(req, 50);
+    let limit = getLimit(req, 10, 100);
     p.limit(limit).toArray()
         .then(ms => res.send(ms)).catch(next);
 }
@@ -64,7 +122,7 @@ async function showAsync(req, res, next) {
         entry = await Dict.coll().findOne({word: word.toLowerCase()});
     }
     if (entry) {
-        if (!entry.simple || entry.simple.length === 0) {
+        if (!entry.simpleHc || entry.simpleHc.length === 0) {
             let bfs = entry.baseForms;
             if (bfs && bfs.length === 1) {
                 let baseForm = bfs[0];
@@ -160,15 +218,11 @@ async function loadAWord(word) {
 }
 
 async function getBasicAsync(req, res, next) {
-    let fields = {_id: 0, word: 1, simple: 1, categories: 1, baseForms: 1};
+    let fields = {_id: 0, word: 1, categories: 1, baseForms: 1};
 
     let loadId = typeof req.query._id !== 'undefined';
-    let loadNextItemId = typeof req.query.nextItemId !== 'undefined';
     if (loadId) {
         fields._id = 1;
-    }
-    if (loadNextItemId) {
-        fields.nextItemId = 1;
     }
     let word = req.params.word;
     let entry = await Dict.coll().findOne({word}, {fields});
@@ -182,15 +236,11 @@ async function getBasicAsync(req, res, next) {
             let odi = entry;
             entry = {
                 word,
-                simple: odi.simple,
                 categories: odi.categories,
                 baseForms: odi.baseForms
             };
             if (loadId) {
                 entry._id = odi._id;
-            }
-            if (loadNextItemId) {
-                entry.nextItemId = odi.nextItemId;
             }
             return res.json(entry);
         }

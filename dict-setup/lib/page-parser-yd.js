@@ -130,7 +130,7 @@ function parsePhrases(doc, word) {
                     exp = exp.replace(/\([^)]+\)/g, ' ');
                     exp = exp.replace(/  +/g, ' ');
                 }
-                let matcher = exp.match(/^([a-zA-Z ]+)/);
+                let matcher = exp.match(/^([a-zA-Z' ]+)/);
                 if (matcher) {
                     let phrase = matcher[1];
                     if (phrase) {
