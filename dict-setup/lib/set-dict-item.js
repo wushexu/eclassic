@@ -86,7 +86,7 @@ function mergeDictItems(dictItemHc, dictItemYd) {
     }
     dictItem.simpleHc = dictItem.simple;
     dictItem.completeHc = dictItem.complete;
-    dictItem.complete = [];
+    dictItem.complete = null;
     dictItem.simpleYd = dictItemYd.simple;
     dictItem.completeYd = dictItemYd.complete;
     dictItem.phrases = union(dictItem.phrases, dictItemYd.phrases);

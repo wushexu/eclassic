@@ -61,7 +61,11 @@ module.exports.simpleCurd = (collectionName) => {
             return Promise.resolve({ok: 0});
         }
         if (typeof _id !== 'object') _id = ObjectID(_id);
-        return coll().updateOne({'_id': _id}, {'$set': values});
+        let updater = {
+            '$set': values,
+            $currentDate: {updatedAt: true}
+        };
+        return coll().updateOne({'_id': _id}, updater);
     }
 
     function remove(_id) {

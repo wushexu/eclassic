@@ -39,11 +39,10 @@ function search(req, res, next) {
 
     let query = req.query;
 
-    if (typeof query.phrase === 'undefined') {
-        filter.isPhrase = false;
-    }
     if (typeof query.phraseOnly !== 'undefined') {
         filter.isPhrase = true;
+    } else if (typeof query.phrase === 'undefined') {
+        filter.isPhrase = false;
     }
 
     if (query.hc) {
@@ -186,7 +185,11 @@ async function updateAsync(req, res, next) {
     if (isId(idOrWord)) {
         result = await Dict.update(req.params._id, entry);
     } else {
-        result = await Dict.coll().updateOne({word: idOrWord}, entry);
+        let updater = {
+            '$set': entry,
+            $currentDate: {updatedAt: true}
+        };
+        result = await Dict.coll().updateOne({word: idOrWord}, updater);
     }
     sendMgResult(res, result);
 }
