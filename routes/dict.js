@@ -109,23 +109,27 @@ function isId(idOrWord) {
 }
 
 async function showAsync(req, res, next) {
+    let fields = {};
+    if (typeof req.query.noref !== 'undefined') {
+        fields = {simpleHc: 0, simpleYd: 0, completeHc: 0, completeYd: 0, phrases: 0};
+    }
     let idOrWord = req.params._id;
     let entry;
     if (isId(idOrWord)) {
-        entry = await Dict.getById(idOrWord);
+        entry = await Dict.getById(idOrWord, fields);
         return res.json(entry);
     }
     let word = idOrWord;
-    entry = await Dict.coll().findOne({word});
+    entry = await Dict.coll().findOne({word}, fields);
     if (!entry && word.toLowerCase() !== word) {
-        entry = await Dict.coll().findOne({word: word.toLowerCase()});
+        entry = await Dict.coll().findOne({word: word.toLowerCase()}, fields);
     }
     if (entry) {
         if (!entry.simpleHc || entry.simpleHc.length === 0) {
             let bfs = entry.baseForms;
             if (bfs && bfs.length === 1) {
                 let baseForm = bfs[0];
-                let bfe = await Dict.coll().findOne({word: baseForm});
+                let bfe = await Dict.coll().findOne({word: baseForm}, fields);
                 if (bfe) {
                     entry = bfe;
                 }
@@ -145,7 +149,7 @@ async function showAsync(req, res, next) {
         let bases = guestBaseForms(word);
         // console.log(bases);
         for (let base of bases) {
-            entry = await Dict.coll().findOne({word: base});
+            entry = await Dict.coll().findOne({word: base}, fields);
             if (entry) {
                 return res.json(entry);
             }
@@ -155,7 +159,7 @@ async function showAsync(req, res, next) {
     if (typeof getStem !== 'undefined') {
         let stem = guestStem(word);
         if (stem) {
-            entry = await Dict.coll().findOne({word: stem});
+            entry = await Dict.coll().findOne({word: stem}, fields);
         }
     }
 
