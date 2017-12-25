@@ -1,24 +1,14 @@
 let express = require('express');
 let router = express.Router();
 let reverse = require('lodash/reverse');
-const {extractFields, sendMgResult, wrapAsync, wrapAsyncOne} = require('../common/helper');
+const {
+    extractFields, getLimit, sendMgResult,
+    wrapAsync, wrapAsyncOne
+} = require('../common/helper');
 let Dict = require('../models/dict');
 let restful = require('./common/rest');
 let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 let {loadAWordOnTheFly} = require('../dict-setup/load-on-the-fly');
-
-
-function getLimit(req, defaultLimit, threshold) {
-    let limit = req.query['limit'];
-    if (!limit || isNaN(limit)) {
-        return defaultLimit;
-    }
-    limit = parseInt(limit);
-    if (!threshold) {
-        return limit;
-    }
-    return Math.min(limit, threshold);
-}
 
 
 function search(req, res, next) {

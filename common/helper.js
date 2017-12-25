@@ -34,6 +34,18 @@ function extractFields(req, fields) {
     return pairs;
 }
 
+function getLimit(req, defaultLimit, threshold) {
+    let limit = req.query['limit'];
+    if (!limit || isNaN(limit)) {
+        return defaultLimit;
+    }
+    limit = parseInt(limit);
+    if (!threshold) {
+        return limit;
+    }
+    return Math.min(limit, threshold);
+}
+
 function readModels(req, fields) {
     let modelParameters = req.body;
     if (typeof modelParameters.length === 'undefined') {
@@ -102,6 +114,7 @@ function wrapAsyncOne(fn) {
 module.exports = {
     reqParam,
     extractFields,
+    getLimit,
     readModels,
     emptyObject,
     sendError,

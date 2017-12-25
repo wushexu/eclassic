@@ -1,6 +1,6 @@
 let testSuit = require('./common/rest');
 
-describe.only('dict CRUD',
+describe('dict CRUD',
     testSuit('dict',
         {
             word: 'nuisance',

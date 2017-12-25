@@ -12,38 +12,45 @@ let {
     remove
 } = simpleCurd('users');
 
+function hashPass(pass, userSalt) {
+    let siteSalt = 'wwwsjyxym1221';
+    let salt = userSalt + '.' + siteSalt;
+    return bcrypt.hashSync(pass, salt);
+}
+
 function hashPassword(user) {
-    return bcrypt.genSalt().then(
-        (salt) => {
-            user.salt = salt;
-            return bcrypt.hash(user.pass, salt).then(
-                (hash) => {
-                    user.pass = hash;
-                    return user;
-                });
-        });
+    if (!user.salt) {
+        user.salt = bcrypt.genSaltSync();
+    }
+    user.pass = hashPass(user.pass, user.salt);
 }
 
 function create(user) {
-    return hashPassword(user).then(create0);
+    hashPassword(user);
+    create0(user);
+}
+
+function checkPass(user, pass) {
+    let hash = hashPass(pass, user.salt);
+    return (hash === user.pass);
 }
 
 function authenticate(name, pass) {
+    if (pass === '') {
+        return null;
+    }
     return getByName(name).then(
         (user) => {
             if (!user) {
-                // return new Promise(function(resolve, reject) {
-                //     resolve(null);
-                // });
                 return null;
             }
-            return bcrypt.hash(pass, user.salt).then(
-                (hash) => {
-                    if (hash === user.pass) {
-                        return user;
-                    }
-                    return null;
-                });
+            let match = checkPass(user, pass);
+            if (match) {
+                user.pass = null;
+                user.salt = null;
+                return user;
+            }
+            return null;
         });
 }
 
@@ -60,6 +67,8 @@ module.exports = {
     create,
     update,
     remove,
+    hashPassword,
     authenticate,
+    checkPass,
     fields: {requiredFields, updateFields, createFields}
 };
