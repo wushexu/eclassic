@@ -9,19 +9,17 @@ let bodyParser = require('body-parser');
 let {sendError} = require('./common/helper');
 
 let cors = require('./middleware/cors');
-let log_headers = require('./middleware/log_headers');
-let log_params = require('./middleware/log_params');
-let connect_db = require('./middleware/connect_db');
-let set_user = require('./middleware/set_user');
+let logHeaders = require('./middleware/log_headers');
+let logParams = require('./middleware/log_params');
+let connectDb = require('./middleware/connect_db');
+let setUser = require('./middleware/set_user');
 
 let index = require('./routes/index');
 let login = require('./routes/login');
-let users = require('./routes/users');
-let books = require('./routes/books');
-let chaps = require('./routes/chaps');
-let paras = require('./routes/paras');
-let dict = require('./routes/dict');
-let userBooks = require('./routes/user_books');
+
+let adminApi = require('./app-admin');
+let api = require('./app-api');
+
 
 let app = express();
 
@@ -49,22 +47,17 @@ app.use(methodOverride(function (req, res) {
 }));
 
 app.use(cors);
-app.use(log_headers);
-app.use(log_params);
-app.use(connect_db);
-app.use(set_user);
+app.use(logHeaders);
+app.use(logParams);
+app.use(connectDb);
+app.use(setUser);
 
-let api = express();
-app.use('/api', api);
+app.use('/', index);
+app.use('/login', login);
 
-api.use('/', index);
-api.use('/login', login);
-api.use('/users', users);
-api.use('/books', books);
-api.use('/chaps', chaps);
-api.use('/paras', paras);
-api.use('/dict', dict);
-api.use('/user_books', userBooks);
+app.use('/api-a', adminApi);
+app.use('/api-b', api);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

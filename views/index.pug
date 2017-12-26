@@ -5,11 +5,11 @@ block content
   p Welcome to CR
     if user
       p= user.name
-      form(action="/api/login" method="post")
+      form(action="/login" method="post")
         p
           input(type='hidden', name='_method', value='DELETE')
           input(type="submit" value="Logout")
     else
       p
-        a(href="/api/login/form")
+        a(href="/login/form")
           | Login

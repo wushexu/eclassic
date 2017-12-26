@@ -1,5 +1,5 @@
-const {extractFields, sendMgResult, wrapAsync} = require('../../common/helper');
-const validate = require('../../middleware/validate');
+const {extractFields, sendMgResult, wrapAsync} = require('../../../common/helper');
+const validate = require('../../../middleware/validate');
 const {maxNo, sequenceInterval} = require('./sorter');
 
 function simpleHandles(Model, options = {}) {

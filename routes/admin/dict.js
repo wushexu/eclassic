@@ -4,11 +4,11 @@ let reverse = require('lodash/reverse');
 const {
     extractFields, getLimit, sendMgResult,
     wrapAsync, wrapAsyncOne
-} = require('../common/helper');
-let Dict = require('../models/dict');
+} = require('../../common/helper');
+let Dict = require('../../models/dict');
 let restful = require('./common/rest');
-let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
-let {loadAWordOnTheFly} = require('../dict-setup/load-on-the-fly');
+let {guestBaseForms, guestStem} = require('../../dict-setup/lib/word-forms');
+let {loadAWordOnTheFly} = require('../../dict-setup/load-on-the-fly');
 
 
 function search(req, res, next) {

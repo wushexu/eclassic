@@ -1,11 +1,11 @@
 let express = require('express');
 let router = express.Router();
 
-let {readModels} = require('../common/helper');
+let {readModels} = require('../../common/helper');
 let restful = require('./common/rest');
 let sorter = require('./common/sorter');
-let Chap = require('../models/chap');
-let Para = require('../models/para');
+let Chap = require('../../models/chap');
+let Para = require('../../models/para');
 
 let handles = restful.simpleHandles(Chap,
     {

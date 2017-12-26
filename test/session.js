@@ -8,7 +8,7 @@ const agent = request.agent(app);
 
 describe('session', function () {
 
-    before(loginFn(agent, {name: 'zzz', pass: 'hh'}));
+    before(loginFn(agent, {name: 'aaaaaa', pass: 'aaaaaa'}));
 
     it('userinfo (login)',
         checkUserinfoFn(agent, (userinfo) => {

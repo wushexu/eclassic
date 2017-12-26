@@ -2,13 +2,13 @@ let express = require('express');
 let router = express.Router();
 
 const restful = require('./common/rest');
-const User = require('../models/user');
-const UserBook = require('../models/user-book');
-const validate = require('../middleware/validate');
+const User = require('../../models/user');
+const UserBook = require('../../models/user-book');
+const validate = require('../../middleware/validate');
 const {
     reqParam, extractFields, getLimit,
     sendError, wrapAsyncOne
-} = require('../common/helper');
+} = require('../../common/helper');
 
 let handles = restful.simpleHandles(User, {
     ChildModel: UserBook,

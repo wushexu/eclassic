@@ -10,6 +10,8 @@ module.exports = (req, res, next) => {
     User.getById(uid).then(
         (user) => {
             console.log("User: " + user.name);
+            delete user.pass;
+            delete user.salt;
             req.user = res.locals.user = user;
             next();
         }).catch(eh);

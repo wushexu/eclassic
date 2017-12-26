@@ -1,5 +1,5 @@
 const request = require('supertest');
-let {app, checkResult, modelHelper} = require('./helper');
+let {adminApi, checkResult, modelHelper} = require('../common/helper');
 
 
 function testSuit(resourceName, toCreate, toUpdate, path, collectionPath) {
@@ -16,7 +16,7 @@ function testSuit(resourceName, toCreate, toUpdate, path, collectionPath) {
         }
 
         before(function (done) {
-            request(app)
+            request(adminApi)
                 .post(collectionPath)
                 .accept('json')
                 .send(toCreate)
@@ -33,14 +33,14 @@ function testSuit(resourceName, toCreate, toUpdate, path, collectionPath) {
         });
 
         it('list ' + resourceName + 's', function (done) {
-            request(app)
+            request(adminApi)
                 .get(collectionPath)
                 .accept('json')
                 .expect(200, done);
         });
 
         it('get ' + resourceName, function (done) {
-            request(app)
+            request(adminApi)
                 .get(path + '/' + getModelId())
                 .accept('json')
                 .expect(200)
@@ -48,7 +48,7 @@ function testSuit(resourceName, toCreate, toUpdate, path, collectionPath) {
         });
 
         it('update ' + resourceName, function (done) {
-            request(app)
+            request(adminApi)
                 .post(path + '/' + getModelId())
                 .accept('json')
                 .send(toUpdate)
@@ -58,7 +58,7 @@ function testSuit(resourceName, toCreate, toUpdate, path, collectionPath) {
         });
 
         it('delete ' + resourceName, function (done) {
-            request(app)
+            request(adminApi)
                 .post(path + '/' + getModelId())
                 .accept('json')
                 .send({_method: 'DELETE'})

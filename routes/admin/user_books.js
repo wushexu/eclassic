@@ -1,11 +1,11 @@
 let express = require('express');
 let router = express.Router();
 
-let {sendMgResult} = require('../common/helper');
+let {sendMgResult} = require('../../common/helper');
 let restful = require('./common/rest');
 
 
-let UserBook = require('../models/user-book');
+let UserBook = require('../../models/user-book');
 
 
 let handles = restful.simpleHandles(UserBook);
@@ -16,7 +16,9 @@ router.route('/:_id')
     .put(update)
     .delete(destroy);
 
-router.route('/').post(create);
+router.post('/', create);
+
+router.get('/', (req, res, next) => res.json([]));
 
 
 module.exports = router;

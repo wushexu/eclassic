@@ -1,5 +1,6 @@
 //let app = require('../app');
-let app = 'http://localhost:3000/api';
+let app = 'http://localhost:3000';
+let adminApi = app + '/api-a';
 
 function checkResult(done) {
     return function (err, res) {
@@ -38,4 +39,4 @@ function modelHelper() {
     };
 }
 
-module.exports = {app, checkResult, modelHelper};
+module.exports = {app, adminApi, checkResult, modelHelper};

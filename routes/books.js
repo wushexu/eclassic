@@ -1,51 +1,53 @@
 let express = require('express');
 let router = express.Router();
 
-let {sendError} = require('../common/helper');
-let restful = require('./common/rest');
-let sorter = require('./common/sorter');
+const {ObjectID} = require('mongodb');
+let {wrapAsyncOne} = require('../common/helper');
+
 let Book = require('../models/book');
-let Chap = require('../models/chap');
-
-let handles = restful.simpleHandles(Book,
-    {
-        ChildModel: Chap,
-        parentFieldInChild: 'bookId',
-        childExistsMsg: 'Chapter Exists'
-    });
+let UserBook = require('../models/user-book');
 
 
-restful.restful(router, handles);
-
-router.param('_id', function (req, res, next, _id) {
-    req.params.bookId = _id;
-    next();
-});
-
-
-let {list: listChaps, create: createChap} = sorter.childResource(Chap, 'bookId');
-
-router.route('/:_id/chaps')
-    .get(listChaps)
-    .post(createChap);
-
-router.get('/:_id/detail', function (req, res, next) {
-
-    const bid = req.params.bookId;
-    const bp = Book.getById(bid);
-    const cp = Chap.coll()
-        .find({bookId: bid})
-        .project({bookId: 0})
+function allBooks(req, res, next) {
+    Book.coll().find()
         .sort({no: 1})
-        .toArray();
-    Promise.all([bp, cp])
-        .then(function ([book, chaps]) {
-            book.chaps = chaps;
-            res.send(book);
-        }).catch(sendError(req, res))
-});
+        .project({no: 0})
+        .toArray()
+        .then(bs => res.send(bs))
+        .catch(next);
+}
 
-let actions = sorter.sortable(Book);
-sorter.sort(router, actions);
+async function myBooks(req, res, next) {
+    let user = req.user;
+    if (!user) {
+        res.send([]);
+        return;
+    }
+
+    let uid = user._id;
+    if (typeof uid === 'object') {
+        //ObjectID
+        uid = uid.toHexString();
+    }
+
+    let userBooks = await UserBook.find({userId: uid}, {userId: 0, chaps: 0});
+    if (userBooks.length === 0) {
+        res.send([]);
+        return;
+    }
+    let bookIds = userBooks.map(ub => ObjectID(ub.bookId));
+    let books = await Book.find({_id: {$in: bookIds}});
+    for (let ub of userBooks) {
+        ub.book = books.find(b => b._id.toString() === ub.bookId);
+        if (ub.book) {
+            delete ub.bookId;
+        }
+    }
+    res.send(userBooks);
+}
+
+
+router.get('/', wrapAsyncOne(myBooks));
+router.get('/all', allBooks);
 
 module.exports = router;

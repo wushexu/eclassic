@@ -1,4 +1,4 @@
-let {extractFields, readModels, sendMgResult, wrapAsync} = require('../../common/helper');
+let {extractFields, readModels, sendMgResult, wrapAsync} = require('../../../common/helper');
 
 const sequenceInterval = 1024;
 const sequenceSeed = 10000;

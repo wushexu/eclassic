@@ -1,10 +1,10 @@
-let testSuit = require('./common/rest');
+let testSuit = require('./rest');
 
 describe('dict CRUD',
     testSuit('dict',
         {
             word: 'nuisance',
-            phonetic: [{UK: 'njuːsns'}],
+            phonetics: [{UK: 'njuːsns'}],
             categories: {cet: 4, haici: 3, pro: 4},
             complete: [
                 {
@@ -16,6 +16,6 @@ describe('dict CRUD',
             phrases: []
         },
         {
-            phonetic: [{UK: 'njuːsns'}, {US: 'nuːsns'}]
+            phonetics: [{UK: 'njuːsns'}, {US: 'nuːsns'}]
         },
         '/dict'));

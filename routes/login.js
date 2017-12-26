@@ -23,7 +23,7 @@ function doLogin(req, res, user) {
                 }
             },
             html: () => {
-                res.redirect('/api/f');
+                res.redirect('/f');
             }
         });
     });
@@ -67,7 +67,7 @@ router.delete('/', (req, res) => {
                 }
             },
             html: () => {
-                res.redirect('/api/f');
+                res.redirect('/f');
             }
         });
     });
