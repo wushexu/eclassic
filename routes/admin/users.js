@@ -3,7 +3,7 @@ let router = express.Router();
 
 const restful = require('./common/rest');
 const User = require('../../models/user');
-const UserBook = require('../../models/user-book');
+const UserBook = require('../../models/user_book');
 const validate = require('../../middleware/validate');
 const {
     reqParam, extractFields, getLimit,

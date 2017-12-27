@@ -52,10 +52,10 @@ router.route('/:_id/paras')
 
 router.get('/:_id/detail', function (req, res, next) {
 
-    const cid = req.params.chapId;
-    const cp = Chap.getById(cid);
+    const chapId = req.params.chapId;
+    const cp = Chap.getById(chapId);
     const pp = Para.coll()
-        .find({chapId: cid})
+        .find({chapId})
         .project({chapId: 0, no: 0})
         .sort({no: 1})
         .toArray();
@@ -63,7 +63,7 @@ router.get('/:_id/detail', function (req, res, next) {
         .then(function ([chap, paras]) {
             chap.paras = paras;
             res.send(chap);
-        }).catch(next)
+        }).catch(next);
 });
 
 router.route('/:_id')

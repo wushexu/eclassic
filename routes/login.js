@@ -2,8 +2,8 @@ let express = require('express');
 let router = express.Router();
 // let debug = require('debug')('cr:session');
 
+let {wrapAsyncOne} = require('../common/helper');
 const validate = require('../middleware/validate');
-
 const User = require('../models/user');
 
 router.get('/form', (req, res) => {
@@ -52,7 +52,7 @@ async function login(req, res, next) {
 // Login
 router.post('/',
     validate.required(['name', 'pass']),
-    login
+    wrapAsyncOne(login)
 );
 
 router.delete('/', (req, res) => {

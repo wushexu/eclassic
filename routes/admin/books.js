@@ -30,11 +30,10 @@ router.route('/:_id/chaps')
     .post(createChap);
 
 router.get('/:_id/detail', function (req, res, next) {
-
-    const bid = req.params.bookId;
-    const bp = Book.getById(bid);
+    const bookId = req.params.bookId;
+    const bp = Book.getById(bookId);
     const cp = Chap.coll()
-        .find({bookId: bid})
+        .find({bookId})
         .project({bookId: 0})
         .sort({no: 1})
         .toArray();
@@ -42,7 +41,7 @@ router.get('/:_id/detail', function (req, res, next) {
         .then(function ([book, chaps]) {
             book.chaps = chaps;
             res.send(book);
-        }).catch(sendError(req, res))
+        }).catch(next);
 });
 
 let actions = sorter.sortable(Book);

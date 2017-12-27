@@ -5,7 +5,7 @@ let {sendMgResult} = require('../../common/helper');
 let restful = require('./common/rest');
 
 
-let UserBook = require('../../models/user-book');
+let UserBook = require('../../models/user_book');
 
 
 let handles = restful.simpleHandles(UserBook);

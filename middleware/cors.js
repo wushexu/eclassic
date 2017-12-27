@@ -12,7 +12,8 @@ module.exports = (req, res, next) => {
     //|| ip.startsWith('10.')
     //|| ip.startsWith('::ffff:10.')
     ) {
-        res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
+        let origin = req.headers['origin'] || 'http://localhost:4200';
+        res.set('Access-Control-Allow-Origin', origin);
         res.set('Access-Control-Allow-Credentials', 'true');
         if (req.method === 'OPTIONS') {
             res.set('Access-Control-Allow-Headers',

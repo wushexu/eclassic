@@ -111,6 +111,19 @@ function wrapAsyncOne(fn) {
     };
 }
 
+function currentUserId(req) {
+    let user = req.user;
+    if (!user) {
+        return null;
+    }
+    let uid = user._id;
+    if (typeof uid === 'object') {
+        //ObjectID
+        uid = uid.toHexString();
+    }
+    return uid;
+}
+
 module.exports = {
     reqParam,
     extractFields,
@@ -120,5 +133,6 @@ module.exports = {
     sendError,
     sendMgResult,
     wrapAsync,
-    wrapAsyncOne
+    wrapAsyncOne,
+    currentUserId
 };
