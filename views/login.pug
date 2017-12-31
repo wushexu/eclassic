@@ -5,10 +5,10 @@ block content
   p
     if message
       = message
-    form(action="/login" method="post")
-      p
-        input(type="text" name="name" value="zzz" placeholder="Username")
-      p
-        input(type="password" name="pass" value="hh" placeholder="Password")
-      p
-        input(type="submit" value="Login")
+  form(action="/login" method="post")
+    p
+      input(type="text" name="name" placeholder="Username")
+    p
+      input(type="password" name="pass" placeholder="Password")
+    p
+      input(type="submit" value="Login")

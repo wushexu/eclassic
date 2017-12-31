@@ -1,4 +1,4 @@
-const {getDb, simpleCurd} = require('./db');
+const {simpleCurd} = require('./db');
 
 module.exports = simpleCurd('chaps');
 

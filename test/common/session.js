@@ -27,7 +27,7 @@ function checkUserinfoFn(agent, predict) {
 
     return function (done) {
         agent
-            .get('/userinfo')
+            .get('/login/userinfo')
             .accept('json')
             .expect(200)
             .end((err, res) => {

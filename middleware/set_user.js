@@ -9,7 +9,6 @@ module.exports = (req, res, next) => {
     let eh = sendError(req, res);
     User.getById(uid).then(
         (user) => {
-            console.log("User: " + user.name);
             delete user.pass;
             delete user.salt;
             req.user = res.locals.user = user;

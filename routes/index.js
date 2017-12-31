@@ -7,15 +7,6 @@ router.get('/f', function (req, res, next) {
     res.render('index');
 });
 
-router.get('/userinfo', function (req, res, next) {
-    if (req.user) {
-        let u = req.user;
-        res.send({login: true, name: u.name});
-    } else {
-        res.send({login: false});
-    }
-});
-
 async function resetPass(req, res, next) {
 
     let user = req.user;
@@ -33,7 +24,7 @@ async function resetPass(req, res, next) {
     }
     user.salt = null;
     user.pass = newPass;
-    User.hashPassword();
+    User.hashPassword(user);
     await User.coll()
         .updateOne({_id: user.id},
             {$set: {pass: newPass, salt: user.salt}});

@@ -96,7 +96,7 @@ async function resetPass(req, res, next) {
     }
     user.salt = null;
     user.pass = newPass;
-    User.hashPassword();
+    User.hashPassword(user);
     await User.coll()
         .updateOne({_id: userId},
             {$set: {pass: newPass, salt: user.salt}});

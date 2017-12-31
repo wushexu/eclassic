@@ -15,7 +15,7 @@ let connectDb = require('./middleware/connect_db');
 let setUser = require('./middleware/set_user');
 
 let index = require('./routes/index');
-let login = require('./routes/login');
+let login = require('./routes/login-f');
 
 let adminApi = require('./app-admin');
 let api = require('./app-api');

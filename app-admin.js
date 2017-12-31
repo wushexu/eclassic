@@ -1,5 +1,6 @@
 let express = require('express');
 
+let login = require('./routes/login');
 let users = require('./routes/admin/users');
 let books = require('./routes/admin/books');
 let chaps = require('./routes/admin/chaps');
@@ -9,6 +10,7 @@ let userBooks = require('./routes/admin/user_books');
 
 let api = express();
 
+api.use('/login', login);
 api.use('/users', users);
 api.use('/books', books);
 api.use('/chaps', chaps);
