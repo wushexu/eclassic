@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne, currentUserId} = require('../common/helper');
+let {wrapAsyncOne, currentUserId, checkChapterPermission} = require('../common/helper');
 
 let UserBook = require('../models/user_book');
 let Chap = require('../models/chap');
@@ -12,20 +12,6 @@ function getChap(req, res, next) {
     Chap.getById(req.params._id)
         .then(chap => res.json(chap))
         .catch(next);
-}
-
-function checkChapterPermission(userBook, chapId) {
-    if (!userBook) {
-        return false;
-    }
-    if (userBook.isAllChaps) {
-        return true;
-    }
-    let userChaps = userBook.chaps;
-    if (!userChaps || userChaps.length === 0) {
-        return false;
-    }
-    return userChaps.find(uc => uc.chapId === chapId);
 }
 
 async function chapDetail(req, res, next) {

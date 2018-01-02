@@ -6,7 +6,7 @@ let {wrapAsyncOne} = require('../common/helper');
 let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 
 async function getEntry(req, res, next) {
-    let fields = {_id: 0, word: 1, categories: 1, phonetics: 1, baseForms: 1, complete: 1};
+    let fields = {_id: 0, word: 1, categories: 1, phonetics: 1, baseForms: 1, forms: 1, complete: 1};
     let word = req.params.word;
     let entry = await Dict.coll().findOne({word}, fields);
     if (!entry && word.toLowerCase() !== word) {
@@ -14,7 +14,7 @@ async function getEntry(req, res, next) {
     }
     if (entry) {
         let {complete, simpleHc} = entry;
-        if ((!complete && complete.length === 0) && (!simpleHc || simpleHc.length === 0)) {
+        if ((!complete || complete.length === 0) && (!simpleHc || simpleHc.length === 0)) {
             let bfs = entry.baseForms;
             if (bfs && bfs.length === 1) {
                 let baseForm = bfs[0];
