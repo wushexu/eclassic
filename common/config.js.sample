@@ -1,0 +1,15 @@
+let user = 'yog';
+let pass = 'yog17';
+let auth = user ? `${user}:${pass}@` : '';
+let host = 'localhost';
+let port = 27017;
+let db = 'articles';
+const MongoUrl = `mongodb://${auth}${host}:${port}/${db}`;
+
+const CustomHeaderPrefix = 'YO-';
+
+const SiteSalt = 'wwwsjyxym1221';
+
+const SessionSecret = 'qaz234';
+
+module.exports = {MongoUrl, CustomHeaderPrefix, SiteSalt, SessionSecret};
