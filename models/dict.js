@@ -4,7 +4,7 @@ module.exports = simpleCurd('dict');
 
 let requiredFields = ['word'];
 let updateFields = ['simpleHc', 'simpleYd', 'completeHc', 'completeYd',
-    'categories', 'complete', 'phonetics', 'forms', 'baseForms',
+    'simple', 'complete', 'categories', 'phonetics', 'forms', 'baseForms',
     'wordLength', 'wordCount', 'isPhrase', 'phrases', 'phraseCount'];
 let createFields = updateFields.concat(['word']);
 

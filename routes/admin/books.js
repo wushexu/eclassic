@@ -56,11 +56,7 @@ async function backupAChap(sourceChap, targetBookId) {
     if (sourceChap.status === StatusBackup) {
         return;
     }
-    if (targetBookId) {
-        targetBookId = idString(targetBookId);
-    } else {
-        targetBookId = sourceChap.bookId;
-    }
+    targetBookId = idString(targetBookId);
     let chapId = idString(sourceChap._id);
 
     let clonedChap = Object.assign({}, sourceChap);
@@ -68,12 +64,10 @@ async function backupAChap(sourceChap, targetBookId) {
     clonedChap.bookId = targetBookId;
     clonedChap.originalId = chapId;
     clonedChap.status = StatusBackup;
-    console.log('create Chap: ' + clonedChap.name);
     await Chap.create(clonedChap);
-    console.log('id: ' + clonedChap._id);
+    console.log('cloned Chap: ' + clonedChap.name);
 
     const paras = await Para.coll().find({chapId}).toArray();
-    console.log('paras size: ' + paras.length);
     if (!paras || paras.length === 0) {
         return;
     }
@@ -90,7 +84,6 @@ async function backupAChap(sourceChap, targetBookId) {
     });
 
     let bulkOperations = clonedParas.map(clonedPara => {
-        console.log('create para: ' + clonedPara.content);
         return {insertOne: {document: clonedPara}};
     });
 
@@ -110,13 +103,12 @@ async function backupABook(req, res, next) {
     delete clonedBook._id;
     clonedBook.originalId = bookId;
     clonedBook.status = StatusBackup;
+    clonedBook.memo = 'Backup';
     await Book.create(clonedBook);
 
     const chaps = await Chap.coll().find({bookId}).toArray();
-    console.log('chaps size: ' + chaps.length);
 
     for (let chap of chaps) {
-        console.log('source chap id: ' + chap._id);
         await backupAChap(chap, clonedBook._id);
     }
 

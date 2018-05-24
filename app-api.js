@@ -8,6 +8,8 @@ let paras = require('./routes/paras');
 let dict = require('./routes/dict');
 let voca = require('./routes/vocabulary');
 let userBooks = require('./routes/user_books');
+let wordCategories = require('./routes/word_categories');
+let userBaseVoca = require('./routes/user_base_voca');
 
 function authorize(req, res, next) {
     if (req.method === 'OPTIONS') {
@@ -22,13 +24,13 @@ function authorize(req, res, next) {
 
     if (!user) {
         let eh = errorHandler(req, res);
-        if (req.method !== 'GET') {
-            eh({status: 401, message: '11 Need Login.'});
-            return;
+        if (url.startsWith('/voca')
+            || url.startsWith('/user_books')
+            || url.startsWith('/word_categories')) {
+            return eh({status: 401, message: 'Need Login.'});
         }
-        if (url.startsWith('/voca') || url.startsWith('/user_books')) {
-            eh({status: 401, message: '12 Need Login.'});
-            return;
+        if (req.method !== 'GET') {
+            return eh({status: 401, message: 'Need Login.'});
         }
     }
     next();
@@ -45,5 +47,7 @@ api.use('/paras', paras);
 api.use('/dict', dict);
 api.use('/voca', voca);
 api.use('/user_books', userBooks);
+api.use('/word_categories', wordCategories);
+api.use('/user_base_voca', userBaseVoca);
 
 module.exports = api;

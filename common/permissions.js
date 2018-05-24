@@ -1,5 +1,6 @@
 let User = require('../models/user');
 let Book = require('../models/book');
+let Chap = require('../models/chap');
 let UserBook = require('../models/user_book');
 let {modelIdString} = require('./helper');
 
@@ -11,9 +12,12 @@ async function evaluateUserContents(user) {
 
     let books = await Book.coll()
         .find({status: 'R'})
-        .sort({no: 1})
         .project({isFree: 1})
         .toArray();
+
+    for (let book of books) {
+        book._id = modelIdString(book);
+    }
 
     if (User.adminOrEditor(user)) {
         bookIds = books.map(b => b._id);
@@ -23,26 +27,25 @@ async function evaluateUserContents(user) {
     let userId = modelIdString(user);
     if (!userId) {
         bookIds = books.filter(b => b.isFree).map(b => b._id);
+        let freeChaps = await Chap.coll()
+            .find({status: 'R', isFree: true})
+            .project({_id: 1})
+            .toArray();
+        chapIds = freeChaps.map(c => modelIdString(c));
         return {bookIds, chapIds};
     }
 
     let userBooks = await UserBook.find({userId},
         {bookId: 1, isAllChaps: 1, chaps: 1});
-    let ubMap = {};
-    for (let ub of userBooks) {
-        ubMap[ub.bookId] = ub;
+    if (!userBooks || userBooks.length === 0) {
+        return {bookIds, chapIds};
     }
 
-    for (let book of books) {
-        let ub = ubMap[book._id];
-        if (!ub) {
-            continue;
-        }
+    for (let ub of userBooks) {
         if (UserBook.ownerOrEditor(ub) || ub.isAllChaps) {
-            bookIds.push(book._id);
+            bookIds.push(ub.bookId);
             continue;
         }
-
         if (!ub.chaps) {
             continue;
         }

@@ -39,7 +39,7 @@ User.authenticate = function (name, pass) {
     if (pass === '') {
         return null;
     }
-    return User.getByName(name).then(
+    return User.coll().findOne({name}).then(
         (user) => {
             if (!user) {
                 return null;

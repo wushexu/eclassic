@@ -45,10 +45,6 @@ module.exports.simpleCurd = (collectionName) => {
         }
     }
 
-    function getByName(name) {
-        return coll().findOne({name});
-    }
-
     function create(entity) {
         if (emptyObject(entity)) {
             return Promise.resolve({ok: 0});
@@ -80,7 +76,6 @@ module.exports.simpleCurd = (collectionName) => {
         find,
         exists,
         getById,
-        getByName,
         create,
         update,
         remove

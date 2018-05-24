@@ -15,7 +15,7 @@ Chap.Statuses = [
     {value: 'C', label: '校对'},
     {value: 'P', label: '上线审核'},
     {value: 'R', label: '上线'},
-    {value: 'B', label: '备份'}
+    {value: 'B', label: '备份'},
     {value: 'X', label: '标记为删除'}
 ];
 */

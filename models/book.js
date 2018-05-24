@@ -4,7 +4,7 @@ const {simpleCurd} = require('./db');
 let Book = simpleCurd('books');
 
 let requiredFields = ['name', 'status'],
-    updateFields = requiredFields.concat(['zhName', 'author', 'zhAuthor', 'no', 'langType',
+    updateFields = requiredFields.concat(['zhName', 'author', 'zhAuthor', 'no', 'langType', 'description',
         'tags', 'isFree', 'price', 'status', 'visibility', 'memo']),
     createFields = updateFields.concat(['originalId']);
 
@@ -22,7 +22,7 @@ Book.Statuses = [
     {value: 'C', label: '校对'},
     {value: 'P', label: '上线审核'},
     {value: 'R', label: '上线'},
-    {value: 'B', label: '备份'}
+    {value: 'B', label: '备份'},
     {value: 'X', label: '标记为删除'}
 ];
 

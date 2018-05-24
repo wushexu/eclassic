@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {getLimit, wrapAsyncOne} = require('../common/helper');
+let {getLimit, wrapAsyncOne, modelIdString} = require('../common/helper');
 let {canReadChap, evaluateUserContents} = require('../common/permissions');
 
 let Chap = require('../models/chap');
@@ -11,7 +11,7 @@ let Para = require('../models/para');
 async function search(req, res, next) {
 
     //TODO: cache
-    let {bookIds, chapIds} = evaluateUserContents(req.user);
+    let {bookIds, chapIds} = await evaluateUserContents(req.user);
 
     let word = req.params.word;
     let filter = {$text: {$search: word, $language: 'en'}};
