@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-const {reqParam, wrapAsyncOne} = require('../common/helper');
+const {reqParam, wrapAsyncOne, idString} = require('../common/helper');
 
 router.get('/f', function (req, res, next) {
     res.render('index');
@@ -25,8 +25,9 @@ async function resetPass(req, res, next) {
     user.salt = null;
     user.pass = newPass;
     User.hashPassword(user);
+    let _id = idString(user._id);
     await User.coll()
-        .updateOne({_id: user.id},
+        .updateOne({_id},
             {$set: {pass: newPass, salt: user.salt}});
 
     res.json({ok: 1});

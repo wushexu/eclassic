@@ -1,15 +1,36 @@
-let user = 'yog';
-let pass = 'yog17';
+let user = 'user';
+let pass = 'pass';
 let auth = user ? `${user}:${pass}@` : '';
 let host = 'localhost';
 let port = 27017;
-let db = 'articles';
+let db = 'xxx';
 const MongoUrl = `mongodb://${auth}${host}:${port}/${db}`;
 
-const CustomHeaderPrefix = 'YO-';
+const SiteSalt = 'xxxxxxxx';
 
-const SiteSalt = 'wwwsjyxym1221';
+const SessionSecret = 'xxxxxx';
 
-const SessionSecret = 'qaz234';
+const SessionKeys = {
+    UserId: 'uid'
+};
 
-module.exports = {MongoUrl, CustomHeaderPrefix, SiteSalt, SessionSecret};
+const ParamNames = {
+    PageLimit: 'limit'
+};
+
+const HeaderPrefix = 'XX-';
+
+const HeaderNames = {
+    UserToken: HeaderPrefix + 'UserToken',
+    Client: HeaderPrefix + 'Client',
+    AppVersion: HeaderPrefix + 'AppVersion'
+};
+
+module.exports = {
+    MongoUrl,
+    SiteSalt,
+    SessionSecret,
+    SessionKeys,
+    ParamNames,
+    HeaderNames
+};

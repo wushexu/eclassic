@@ -16,7 +16,7 @@ async function getEntry(req, res, next) {
         let {complete, simpleHc} = entry;
         if ((!complete || complete.length === 0) && (!simpleHc || simpleHc.length === 0)) {
             let bfs = entry.baseForms;
-            if (bfs && bfs.length === 1) {
+            if (bfs && bfs.length === 1 && bfs[0].length <= word.length) {
                 let baseForm = bfs[0];
                 let bfe = await Dict.coll().findOne({word: baseForm}, fields);
                 if (bfe) {

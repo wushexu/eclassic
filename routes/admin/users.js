@@ -7,7 +7,7 @@ const UserBook = require('../../models/user_book');
 const validate = require('../../middleware/validate');
 const {
     reqParam, extractFields, getLimit,
-    sendError, wrapAsyncOne
+    errorHandler, wrapAsyncOne
 } = require('../../common/helper');
 
 let handles = restful.simpleHandles(User, {
@@ -25,7 +25,7 @@ async function index(req, res, next) {
         filter.name = {$regex: `.*${name}.*`};
     }
     if (typeof req.query.manager !== 'undefined') {
-        filter.role = {$in: ['Admin', 'Editor']};
+        filter.role = {$in: [User.Roles.Admin, User.Roles.Editor]};
     }
 
     let cursor = User.coll().find(filter, fields);
@@ -58,14 +58,14 @@ function checkExists(req, res, next) {
         if (exists) {
             let err = new Error(`User ${name} was existed`);
             err.status = 400;
-            sendError(req, res)(err);
+            errorHandler(req, res)(err);
         } else {
             next();
         }
     };
     User.exists({name})
         .then(hd)
-        .catch(sendError(req, res));
+        .catch(errorHandler(req, res));
 }
 
 handles.index = wrapAsyncOne(index);
@@ -78,7 +78,7 @@ handles.create = validate.appendValidator(
 router.all('/find', (req, res, next) => {
     let pairs = extractFields(req, ['name', 'role', 'gender']);
     User.find(pairs)
-        .then((users) => {
+        .then(users => {
             res.send(users);
         })
         .catch(next);

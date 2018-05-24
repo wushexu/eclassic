@@ -1,50 +1,50 @@
 const bcrypt = require('bcrypt');
 const {simpleCurd} = require('./db');
+const {SiteSalt} = require('../common/config');
 
-let {
-    coll,
-    find,
-    exists,
-    getById,
-    getByName,
-    create: create0,
-    update,
-    remove
-} = simpleCurd('users');
+let User = simpleCurd('users');
 
-function hashPass(pass, userSalt) {
-    let siteSalt = 'wwwsjyxym1221';
-    let salt = userSalt + '.' + siteSalt;
+let requiredFields = ['name', 'pass'],
+    updateFields = ['gender', 'role', 'status', 'accessToken'],
+    createFields = requiredFields.concat(updateFields);
+
+User.fields = {requiredFields, updateFields, createFields};
+
+
+let hashPass = function (pass, userSalt) {
+    let salt = userSalt + '.' + SiteSalt;
     return bcrypt.hashSync(pass, salt);
-}
+};
 
-function hashPassword(user) {
+User.hashPassword = function (user) {
     if (!user.salt) {
         user.salt = bcrypt.genSaltSync();
     }
     user.pass = hashPass(user.pass, user.salt);
-}
+};
 
-function create(user) {
-    hashPassword(user);
+let create0 = User.create;
+
+User.create = function (user) {
+    User.hashPassword(user);
     create0(user);
-}
+};
 
-function checkPass(user, pass) {
+User.checkPass = function (user, pass) {
     let hash = hashPass(pass, user.salt);
     return (hash === user.pass);
-}
+};
 
-function authenticate(name, pass) {
+User.authenticate = function (name, pass) {
     if (pass === '') {
         return null;
     }
-    return getByName(name).then(
+    return User.getByName(name).then(
         (user) => {
             if (!user) {
                 return null;
             }
-            let match = checkPass(user, pass);
+            let match = User.checkPass(user, pass);
             if (match) {
                 user.pass = null;
                 user.salt = null;
@@ -52,23 +52,14 @@ function authenticate(name, pass) {
             }
             return null;
         });
-}
-
-let requiredFields = ['name', 'pass'],
-    updateFields = ['gender', 'role', 'status'],
-    createFields = requiredFields.concat(updateFields);
-
-module.exports = {
-    coll,
-    find,
-    exists,
-    getById,
-    getByName,
-    create,
-    update,
-    remove,
-    hashPassword,
-    authenticate,
-    checkPass,
-    fields: {requiredFields, updateFields, createFields}
 };
+
+const Roles = User.Roles = {Admin: 'Admin', Editor: 'Editor'};
+
+User.adminOrEditor = function (user) {
+    return user &&
+        (user.role === Roles.Admin
+            || user.role === Roles.Editor);
+};
+
+module.exports = User;

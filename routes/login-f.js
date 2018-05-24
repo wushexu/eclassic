@@ -1,57 +1,30 @@
 let express = require('express');
 let router = express.Router();
 // let debug = require('debug')('cr:session');
+const {SessionKeys} = require('../common/config');
 
-let {wrapAsyncOne} = require('../common/helper');
+let {wrapAsyncOne, idString} = require('../common/helper');
 const validate = require('../middleware/validate');
 const User = require('../models/user');
 
-
-router.get('/', (req, res) => {
-    res.render('login');
-});
 
 router.get('/form', (req, res) => {
     res.render('login');
 });
 
-function doLogin(req, res, user) {
-    req.session.uid = user._id;
-    req.session.save(function (err) {
-        if (err) console.error("err:" + err);
-        res.format({
-            json: () => {
-                if (err) {
-                    res.send({ok: 0, message: err.message});
-                } else {
-                    res.send({ok: 1});
-                }
-            },
-            html: () => {
-                res.redirect('/f');
-            }
-        });
-    });
-}
-
 async function login(req, res, next) {
-
     const {name, pass} = req.body;
     let user = await User.authenticate(name, pass);
-    if (user) {
-        doLogin(req, res, user);
-    } else {
-        let message = 'Sorry! invalid credentials.';
-        res.format({
-            json: () => {
-                res.send({ok: 0, message: message});
-            },
-            html: () => {
-                res.locals.message = message;
-                res.render('login');
-            }
-        });
+    if (!user) {
+        res.locals.message = '用户名/密码错误';
+        res.render('login');
+        return;
     }
+    req.session[SessionKeys.UserId] = idString(user._id);
+    req.session.save(function (err) {
+        if (err) console.error("err:" + err);
+        res.redirect('/f');
+    });
 }
 
 // Login
@@ -63,18 +36,7 @@ router.post('/',
 router.delete('/', (req, res) => {
     req.session.destroy((err) => {
         if (err) console.error("err:" + err);
-        res.format({
-            json: () => {
-                if (err) {
-                    res.send({ok: 0, message: err.message});
-                } else {
-                    res.send({ok: 1});
-                }
-            },
-            html: () => {
-                res.redirect('/f');
-            }
-        });
+        res.redirect('/f');
     });
 });
 

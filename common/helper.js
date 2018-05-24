@@ -1,4 +1,5 @@
 // let debug = require('debug')('cr:m');
+const {ParamNames} = require('./config');
 
 function emptyObject(obj) {
     if (typeof obj !== 'object') {
@@ -35,7 +36,7 @@ function extractFields(req, fields) {
 }
 
 function getLimit(req, defaultLimit, threshold) {
-    let limit = req.query['limit'];
+    let limit = req.query[ParamNames.PageLimit];
     if (!limit || isNaN(limit)) {
         return defaultLimit;
     }
@@ -70,7 +71,7 @@ function simpleReject(err) {
     //throw err;
 }
 
-function sendError(req, res) {
+function errorHandler(req, res) {
 
     return function (err) {
         console.error(err);
@@ -112,31 +113,20 @@ function wrapAsyncOne(fn) {
     };
 }
 
-function currentUserId(req) {
-    let user = req.user;
-    if (!user) {
-        return null;
-    }
-    let uid = user._id;
-    if (typeof uid === 'object') {
+
+function idString(id) {
+    if (typeof id === 'object') {
         //ObjectID
-        uid = uid.toHexString();
+        return id.toHexString();
     }
-    return uid;
+    return id;
 }
 
-function checkChapterPermission(userBook, chapId) {
-    if (!userBook) {
-        return false;
+function modelIdString(model) {
+    if (!model) {
+        return null;
     }
-    if (userBook.isAllChaps) {
-        return true;
-    }
-    let userChaps = userBook.chaps;
-    if (!userChaps || userChaps.length === 0) {
-        return false;
-    }
-    return userChaps.find(uc => uc.chapId === chapId);
+    return idString(model._id);
 }
 
 module.exports = {
@@ -145,10 +135,10 @@ module.exports = {
     getLimit,
     readModels,
     emptyObject,
-    sendError,
+    errorHandler,
     sendMgResult,
     wrapAsync,
     wrapAsyncOne,
-    currentUserId,
-    checkChapterPermission
+    idString,
+    modelIdString
 };

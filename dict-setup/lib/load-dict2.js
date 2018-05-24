@@ -100,8 +100,14 @@ async function createAsync(dictColl, entry) {
     }
     let existed = await dictColl.findOne({word}, {word: 1});
     if (existed) {
-        await dictColl.updateOne({'_id': existed._id}, {'$set': entry});
+        await dictColl.updateOne({'_id': existed._id},
+            {
+                '$set': entry,
+                $inc: {version: 1},
+                $currentDate: {updatedAt: true}
+            });
     } else {
+        entry.version = 1;
         await dictColl.insertOne(entry);
     }
 }

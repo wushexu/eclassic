@@ -1,33 +1,20 @@
 let express = require('express');
 let router = express.Router();
 
-let {getLimit, wrapAsyncOne, currentUserId, checkChapterPermission} = require('../common/helper');
+let {getLimit, wrapAsyncOne} = require('../common/helper');
+let {canReadChap, evaluateUserContents} = require('../common/permissions');
 
-let UserBook = require('../models/user_book');
 let Chap = require('../models/chap');
 let Para = require('../models/para');
 
 
 async function search(req, res, next) {
-    let userId = currentUserId(req);
-    if (!userId) {
-        return res.json([]);
-    }
+
+    //TODO: cache
+    let {bookIds, chapIds} = evaluateUserContents(req.user);
+
     let word = req.params.word;
     let filter = {$text: {$search: word, $language: 'en'}};
-
-    let userBooks = await UserBook.find({userId}, {userId: 0});
-    let bookIds = [];
-    let chapIds = [];
-    for (let ub of userBooks) {
-        if (ub.isAllChaps) {
-            bookIds.push(ub.bookId);
-        } else if (ub.chaps) {
-            for (let cp of ub.chaps) {
-                chapIds.push(cp.chapId);
-            }
-        }
-    }
 
     if (bookIds.length > 0 || chapIds.length > 0) {
         if (chapIds.length === 0) {
@@ -35,7 +22,10 @@ async function search(req, res, next) {
         } else if (bookIds.length === 0) {
             filter.chapId = {$in: chapIds};
         } else {
-            filter['$or'] = [{bookId: {$in: bookIds}}, {chapId: {$in: chapIds}}];
+            filter['$or'] = [
+                {bookId: {$in: bookIds}},
+                {chapId: {$in: chapIds}}
+            ];
         }
     }
     // console.log(JSON.stringify(filter, null, 2));
@@ -50,7 +40,7 @@ async function search(req, res, next) {
 }
 
 async function getPara(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json(null);
     }
@@ -59,13 +49,13 @@ async function getPara(req, res, next) {
         return res.json(null);
     }
 
-    let userBook = await UserBook.coll()
-        .findOne({userId, bookId: para.bookId}, {userId: 0, bookId: 0});
-    if (!checkChapterPermission(userBook, para.chapId)) {
+    const chap = await Chap.getById(para.chapId);
+    let hasPermission = await canReadChap(req.user, chap);
+    if (!hasPermission) {
         return res.json(null);
     }
-    return res.json(para);
 
+    return res.json(para);
 }
 
 router.get('/search/:word', wrapAsyncOne(search));

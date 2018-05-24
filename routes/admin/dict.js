@@ -117,7 +117,7 @@ async function showAsync(req, res, next) {
     if (entry) {
         if (!entry.simpleHc || entry.simpleHc.length === 0) {
             let bfs = entry.baseForms;
-            if (bfs && bfs.length === 1) {
+            if (bfs && bfs.length === 1 && bfs[0].length <= word.length) {
                 let baseForm = bfs[0];
                 let bfe = await Dict.coll().findOne({word: baseForm}, fields);
                 if (bfe) {

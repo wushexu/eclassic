@@ -1,4 +1,4 @@
-let debug = require('debug')('cr:p');
+let debug = require('debug')('cr:params');
 let {emptyObject} = require('../common/helper');
 
 

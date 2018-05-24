@@ -2,10 +2,10 @@ let express = require('express');
 let router = express.Router();
 
 let UserVocabulary = require('../models/user_vocabulary');
-let {wrapAsyncOne, currentUserId, sendMgResult} = require('../common/helper');
+let {sendMgResult,modelIdString} = require('../common/helper');
 
 function getOne(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json(null);
     }
@@ -17,7 +17,7 @@ function getOne(req, res, next) {
 }
 
 function getAll(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json([]);
     }
@@ -27,7 +27,7 @@ function getAll(req, res, next) {
 }
 
 function addWord(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }
@@ -57,7 +57,7 @@ function addWord(req, res, next) {
 }
 
 function syncVocubulary(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }
@@ -104,7 +104,7 @@ function syncVocubulary(req, res, next) {
 }
 
 function updateWord(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }
@@ -124,7 +124,7 @@ function updateWord(req, res, next) {
 }
 
 function removeWord(req, res, next) {
-    let userId = currentUserId(req);
+    let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }

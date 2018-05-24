@@ -1,32 +1,37 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne} = require('../common/helper');
+const {HeaderNames, SessionKeys} = require('../common/config');
+let {wrapAsyncOne, idString} = require('../common/helper');
 const validate = require('../middleware/validate');
 const User = require('../models/user');
 
 
-function doLogin(req, res, user) {
-    req.session.uid = user._id;
+async function login(req, res, next) {
+    const {name, pass} = req.body;
+    let user = await User.authenticate(name, pass);
+    if (!user) {
+        let message = 'Invalid Credentials.';
+        res.send({ok: 0, message: message});
+        return;
+    }
+
+    // let accessToken = req.header(HeaderNames.xxx);
+    // let client = req.header(HeaderNames.xxx);// PC/Android
+    // TODO: set accessToken, if from app
+    req.session[SessionKeys.UserId] = idString(user._id);
     req.session.save(function (err) {
         if (err) {
             console.error("err:" + err);
             res.send({ok: 0, message: err.message});
         } else {
-            res.send({ok: 1});
+            let result = {ok: 1};
+            if (user.role) {
+                result.role = user.role;
+            }
+            res.send(result);
         }
     });
-}
-
-async function login(req, res, next) {
-    const {name, pass} = req.body;
-    let user = await User.authenticate(name, pass);
-    if (user) {
-        doLogin(req, res, user);
-    } else {
-        let message = 'invalid credentials.';
-        res.send({ok: 0, message: message});
-    }
 }
 
 // Login
@@ -49,7 +54,11 @@ router.delete('/', (req, res) => {
 router.get('/userinfo', function (req, res, next) {
     if (req.user) {
         let u = req.user;
-        res.send({login: true, name: u.name});
+        let result = {login: true, name: u.name};
+        if (u.role) {
+            result.role = u.role;
+        }
+        res.send(result);
     } else {
         res.send({login: false});
     }

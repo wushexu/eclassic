@@ -1,9 +1,7 @@
 const {reqParam} = require('../common/helper');
 
 function parseField(field) {
-    return field
-        .split(/\[|\]/)
-        .filter((s) => s);
+    return field.split(/\[|]/).filter(s => s);
 }
 
 function getField(req, field) {

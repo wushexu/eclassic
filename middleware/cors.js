@@ -1,4 +1,5 @@
 module.exports = (req, res, next) => {
+    console.log("------------");
     let ip = req.ip;
     if (!ip) {
         next();
@@ -12,7 +13,7 @@ module.exports = (req, res, next) => {
     //|| ip.startsWith('10.')
     //|| ip.startsWith('::ffff:10.')
     ) {
-        let origin = req.headers['origin'] || 'http://localhost:4200';
+        let origin = req.headers['origin']/* || 'http://localhost:4200'*/;
         res.set('Access-Control-Allow-Origin', origin);
         res.set('Access-Control-Allow-Credentials', 'true');
         if (req.method === 'OPTIONS') {

@@ -1,9 +1,17 @@
 const {simpleCurd} = require('./db');
 
-module.exports = simpleCurd('user_vocabulary');
+let UserVocabulary = simpleCurd('user_vocabulary');
 
 let requiredFields = ['userId', 'word'],
     updateFields = ['bookId', 'chapId', 'paraId', 'familiarity'],
     createFields = updateFields.concat(requiredFields);
 
-module.exports.fields = {requiredFields, updateFields, createFields};
+UserVocabulary.fields = {requiredFields, updateFields, createFields};
+
+UserVocabulary.Familiarities = [
+    {value: 1, label: '很陌生'},
+    {value: 2, label: '熟悉中'},
+    {value: 3, label: '已掌握'}
+];
+
+module.exports = UserVocabulary;

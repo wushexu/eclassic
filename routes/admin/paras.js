@@ -1,13 +1,14 @@
 let express = require('express');
 let router = express.Router();
 
-let {sendMgResult} = require('../../common/helper');
+// let {sendMgResult} = require('../../common/helper');
 let restful = require('./common/rest');
 let sorter = require('./common/sorter');
 let Para = require('../../models/para');
 
-const LF = '\n';
+// const LF = '\n';
 
+/*
 async function saveMerging(source, target, res) {
 
     let r = await Para.coll().bulkWrite([
@@ -85,6 +86,7 @@ async function mergeDown(req, res, next) {
 
     saveMerging(source, target, res);
 }
+*/
 
 
 let handles = restful.simpleHandles(Para);
@@ -100,7 +102,7 @@ let actions = sorter.sortable(Para, 'chapId');
 sorter.sort(router, actions);
 
 
-router.post('/:_id/mergeUp', mergeUp);
-router.post('/:_id/mergeDown', mergeDown);
+// router.post('/:_id/mergeUp', mergeUp);
+// router.post('/:_id/mergeDown', mergeDown);
 
 module.exports = router;

@@ -1,47 +1,74 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne, currentUserId} = require('../common/helper');
+let {wrapAsyncOne,modelIdString} = require('../common/helper');
 
 let Book = require('../models/book');
-let UserBook = require('../models/user_book');
 let Chap = require('../models/chap');
+let UserBook = require('../models/user_book');
+let {adminOrEditor} = require('../models/user');
 
 
 async function allBooks(req, res, next) {
-    let books = await Book.coll().find()
+    let books = await Book.coll()
+        .find({status: 'R'})
         .sort({no: 1})
-        .project({no: 0})
+        .project({no: 0, status: 0})
         .toArray();
 
-    let userId = currentUserId(req);
-    if (!userId) {
+    let user = req.user;
+    if (adminOrEditor(user)) {
+        for (let book of books) {
+            delete book.visibility;
+        }
         return res.json(books);
     }
-    let userBooks = await UserBook
-        .find({userId}, {userId: 0, chaps: 0});
-    for (let ub of userBooks) {
-        let book = books.find(b => b._id.toString() === ub.bookId);
-        if (book) {
-            book.userBook = ub;
+
+    let nonPublic = books.find(book => book.visibility !== 'P');
+    if (!nonPublic) {
+        for (let book of books) {
+            delete book.visibility;
         }
+        return res.json(books);
     }
 
+    let userId = modelIdString(user);
+    let userBooks = await UserBook
+        .find({userId, role: {$in: [UserBook.Roles.Owner, UserBook.Roles.Editor]}},
+            {bookId: 1, role: 1});
+    if (!userBooks) {
+        userBooks = [];
+    }
+
+    books = books.filter(book => {
+        if (book.visibility === 'P') {
+            return true;
+        }
+        if (book.visibility === 'E') {
+            let userBook = userBooks.find(ub => ub.bookId === book.id);
+            return userBook && UserBook.ownerOrEditor(userBook);
+        }
+        return false;
+    });
+
+    for (let book of books) {
+        delete book.visibility;
+    }
     res.json(books);
 }
 
 function getBook(req, res, next) {
-    Book.getById(req.params._id)
+    Book.releasedBook(req.params._id)
         .then(book => res.json(book))
         .catch(next);
 }
 
 async function bookDetail(req, res, next) {
     const bookId = req.params._id;
-    const bp = Book.getById(bookId);
+    const bp = Book.releasedBook(bookId);
     const cp = Chap.coll()
-        .find({bookId})
-        .project({bookId: 0})
+        .find({bookId, status: 'R'})
+        .project({bookId: 0, status: 0})
         .sort({no: 1})
         .toArray();
     let [book, chaps] = await Promise.all([bp, cp]);
@@ -50,13 +77,6 @@ async function bookDetail(req, res, next) {
     }
     book.chaps = chaps;
 
-    let userId = currentUserId(req);
-    if (!userId) {
-        return res.json(book);
-    }
-    let userBook = await UserBook.coll()
-        .findOne({userId, bookId}, {userId: 0});
-    book.userBook = userBook;
     res.json(book);
 }
 

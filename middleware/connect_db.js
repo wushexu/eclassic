@@ -1,8 +1,7 @@
 const {connectDb} = require('../models/db');
-const {sendError} = require('../common/helper');
+const {errorHandler} = require('../common/helper');
 
 module.exports = (req, res, next) => {
-    // console.log("------------");
-    let eh = sendError(req, res);
+    let eh = errorHandler(req, res);
     connectDb().then(next).catch(eh);
 };
