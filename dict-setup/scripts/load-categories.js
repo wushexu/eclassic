@@ -38,13 +38,13 @@ let loadSettings = {
     },
     gre: {
         file: 'wl-gre.txt',
-        categories: {gre: true},
+        categories: {gre: 1},
         skipCondition: (categories) => categories.junior,
         extractWord: wholeLine
     },
     yasi: {
         file: 'wl-yasi.txt',
-        categories: {yasi: true},
+        categories: {yasi: 1},
         skipCondition: (categories) => categories.junior,
         extractWord: wholeLine
     },

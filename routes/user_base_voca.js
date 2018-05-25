@@ -5,29 +5,34 @@ let UserBaseVocabulary = require('../models/user_base_vocabulary');
 let {wrapAsyncOne, modelIdString} = require('../common/helper');
 
 
-async function baseVocabularyCategories(req, res, next) {
+async function list(req, res, next) {
     let userId = modelIdString(req.user);
     let ubvs = await UserBaseVocabulary.find({userId}, {_id: 0, categoryCode: 1});
-    let categoryCodes = ubvs.map(b => b.categoryCode);
-    res.json(categoryCodes);
+    res.json(ubvs);
 }
 
-async function resetBaseVocabulary(req, res, next) {
+async function reset(req, res, next) {
     let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }
-    let codes = req.body.codes;
-    if (!codes) {
+    let bvs = req.body;
+    if (!bvs) {
         return res.json({ok: 0});
     }
-    if (typeof codes === 'string') {
-        codes = [codes];
+    if (typeof bvs.length === 'undefined') {
+        bvs = [bvs];
+    }
+    for (let bv of bvs) {
+        if (typeof bv === 'string') {
+            bv = {categoryCode: bv};
+        }
+        bv.userId = userId;
     }
     await UserBaseVocabulary.coll().deleteMany({userId});
 
-    let bulkOperations = codes.map(categoryCode => {
-        return {insertOne: {document: {userId, categoryCode}}};
+    let bulkOperations = bvs.map(bv => {
+        return {insertOne: {document: bv}};
     });
     await UserBaseVocabulary.coll().bulkWrite(bulkOperations);
 
@@ -35,7 +40,7 @@ async function resetBaseVocabulary(req, res, next) {
 }
 
 
-router.get('/', wrapAsyncOne(baseVocabularyCategories));
-router.post('/reset', wrapAsyncOne(resetBaseVocabulary));
+router.get('/', wrapAsyncOne(list));
+router.post('/', wrapAsyncOne(reset));
 
 module.exports = router;

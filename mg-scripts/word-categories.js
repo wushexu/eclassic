@@ -8,17 +8,18 @@ function createRecords() {
         wc.wordCount = 0;
         wc.extendTo = extendTo;
         wc.extendedWordCount = 0;
-        wc.useAsUserBase = false;
         wc.isFrequency = dictCategoryValue === 1000;
+        wc.useAsUserBase = !wc.isFrequency && dictCategoryKey !== 'haici';
+        wc.version = 1;
         categories.push(wc);
     };
 
-    addCategory('junior', 1, 'junior1', '初级1');
-    addCategory('junior', 2, 'junior2', '初级2', 'junior1');
+    addCategory('junior', 1, 'junior1', '初级');
+    addCategory('junior', 2, 'junior2', '基础', 'junior1');
     addCategory('cet', 4, 'cet4', 'CET4', 'junior2');
     addCategory('cet', 6, 'cet6', 'CET6', 'cet4');
-    addCategory('gre', true, 'gre', 'GRE', 'junior2');
-    addCategory('yasi', true, 'yasi', '雅思', 'junior2');
+    addCategory('gre', 1, 'gre', 'GRE', 'junior2');
+    addCategory('yasi', 1, 'yasi', '雅思', 'junior2');
     addCategory('pro', 1, 'pro1', '专英', 'cet6');
     addCategory('haici', 5, 'haici5', '海词5星');
     addCategory('haici', 4, 'haici4', '海词4星', 'haici5');
@@ -34,10 +35,10 @@ function createRecords() {
         return {insertOne: {document: cat}};
     });
 
+    db.word_categories.drop();
     db.word_categories.createIndex({code: 1}, {unique: true});
 
     db.word_categories.bulkWrite(bulkOperations);
-
 }
 
 function evaluateWordCount() {
@@ -88,6 +89,6 @@ function evaluateExtendedWordCount() {
 
 }
 
-// createRecords();
-// evaluateWordCount();
+createRecords();
+evaluateWordCount();
 evaluateExtendedWordCount();

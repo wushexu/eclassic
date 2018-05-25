@@ -8,7 +8,7 @@ const {
 let Dict = require('../../models/dict');
 let restful = require('./common/rest');
 let {guestBaseForms, guestStem} = require('../../dict-setup/lib/word-forms');
-let {loadAWordOnTheFly} = require('../../dict-setup/load-on-the-fly');
+let {loadAWordOnTheFly} = require('../../dict-setup/lib/load-on-the-fly');
 
 
 function search(req, res, next) {

@@ -8,7 +8,7 @@ const validate = require('../middleware/validate');
 const User = require('../models/user');
 
 
-router.get('/form', (req, res) => {
+router.get(['/', '/form'], (req, res) => {
     res.render('login');
 });
 

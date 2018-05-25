@@ -3,7 +3,7 @@ let router = express.Router();
 
 const {reqParam, wrapAsyncOne, idString} = require('../common/helper');
 
-router.get('/f', function (req, res, next) {
+router.get(['/', '/f'], function (req, res, next) {
     res.render('index');
 });
 

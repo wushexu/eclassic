@@ -9,6 +9,7 @@ let chaps = require('./routes/admin/chaps');
 let paras = require('./routes/admin/paras');
 let dict = require('./routes/admin/dict');
 let userBooks = require('./routes/admin/user_books');
+let wordCategories = require('./routes/admin/word_categories');
 
 function authorize(req, res, next) {
     if (req.method === 'OPTIONS') {
@@ -48,5 +49,6 @@ api.use('/chaps', chaps);
 api.use('/paras', paras);
 api.use('/dict', dict);
 api.use('/user_books', userBooks);
+api.use('/word_categories', wordCategories);
 
 module.exports = api;
