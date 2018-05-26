@@ -12,7 +12,10 @@ function allCategories(req, res, next) {
     if (typeof ub !== 'undefined') {
         filter.useAsUserBase = true;
     }
-    WordCategory.find(filter, {_id: 0})
+    WordCategory.coll()
+        .find(filter, {_id: 0})
+        .sort({no: 1})
+        .toArray()
         .then(wcs => res.json(wcs)).catch(next);
 }
 
@@ -62,7 +65,7 @@ async function wordList(req, res, next) {
 
 router.get('/', allCategories);
 router.get('/:code', getOne);
-router.get('/:code/sample', wrapAsyncOne(sampleWords));
+router.post('/:code/sample', wrapAsyncOne(sampleWords));
 router.post('/:code/all', wrapAsyncOne(wordList));
 
 module.exports = router;

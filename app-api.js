@@ -26,7 +26,8 @@ function authorize(req, res, next) {
         let eh = errorHandler(req, res);
         if (url.startsWith('/voca')
             || url.startsWith('/user_books')
-            || url.startsWith('/word_categories')) {
+            || url.startsWith('/word_categories')
+            || url.startsWith('/user_base_voca')) {
             return eh({status: 401, message: 'Need Login.'});
         }
         if (req.method !== 'GET') {

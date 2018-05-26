@@ -1,6 +1,7 @@
 function createRecords() {
 
     let categories = [];
+    let no = 1;
 
     let addCategory = (dictCategoryKey, dictCategoryValue, code, name, extendTo = null) => {
         let wc = {code, name, dictCategoryKey, dictCategoryValue};
@@ -11,6 +12,7 @@ function createRecords() {
         wc.isFrequency = dictCategoryValue === 1000;
         wc.useAsUserBase = !wc.isFrequency && dictCategoryKey !== 'haici';
         wc.version = 1;
+        wc.no = no++;
         categories.push(wc);
     };
 
@@ -20,7 +22,7 @@ function createRecords() {
     addCategory('cet', 6, 'cet6', 'CET6', 'cet4');
     addCategory('gre', 1, 'gre', 'GRE', 'junior2');
     addCategory('yasi', 1, 'yasi', '雅思', 'junior2');
-    addCategory('pro', 1, 'pro1', '专英', 'cet6');
+    addCategory('pro', 1, 'pro', '专英', 'cet6');
     addCategory('haici', 5, 'haici5', '海词5星');
     addCategory('haici', 4, 'haici4', '海词4星', 'haici5');
     addCategory('haici', 3, 'haici3', '海词3星', 'haici4');
