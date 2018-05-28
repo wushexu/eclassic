@@ -5,7 +5,7 @@ let Book = simpleCurd('books');
 
 let requiredFields = ['name', 'status'],
     updateFields = requiredFields.concat(['zhName', 'author', 'zhAuthor', 'no', 'langType', 'description',
-        'tags', 'isFree', 'price', 'status', 'visibility', 'memo']),
+        'annotationFamilyId', 'tags', 'isFree', 'price', 'status', 'visibility', 'memo']),
     createFields = updateFields.concat(['originalId']);
 
 Book.fields = {requiredFields, updateFields, createFields};

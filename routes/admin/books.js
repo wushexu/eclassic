@@ -104,6 +104,10 @@ async function backupABook(req, res, next) {
     clonedBook.originalId = bookId;
     clonedBook.status = StatusBackup;
     clonedBook.memo = 'Backup';
+    let no = clonedBook.no;
+    if (no && !isNaN(no)) {
+        clonedBook.no = no + 1;
+    }
     await Book.create(clonedBook);
 
     const chaps = await Chap.coll().find({bookId}).toArray();

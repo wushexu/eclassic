@@ -10,6 +10,7 @@ let voca = require('./routes/vocabulary');
 let userBooks = require('./routes/user_books');
 let wordCategories = require('./routes/word_categories');
 let userBaseVoca = require('./routes/user_base_voca');
+let annotationFamilies = require('./routes/annotation_families');
 
 function authorize(req, res, next) {
     if (req.method === 'OPTIONS') {
@@ -50,5 +51,6 @@ api.use('/voca', voca);
 api.use('/user_books', userBooks);
 api.use('/word_categories', wordCategories);
 api.use('/user_base_voca', userBaseVoca);
+api.use('/annotation_families', annotationFamilies);
 
 module.exports = api;

@@ -10,6 +10,8 @@ let paras = require('./routes/admin/paras');
 let dict = require('./routes/admin/dict');
 let userBooks = require('./routes/admin/user_books');
 let wordCategories = require('./routes/admin/word_categories');
+let annotationFamilies = require('./routes/admin/annotation_families');
+let annotationGroups = require('./routes/admin/annotation_groups');
 
 function authorize(req, res, next) {
     if (req.method === 'OPTIONS') {
@@ -50,5 +52,7 @@ api.use('/paras', paras);
 api.use('/dict', dict);
 api.use('/user_books', userBooks);
 api.use('/word_categories', wordCategories);
+api.use('/annotation_families', annotationFamilies);
+api.use('/annotation_groups', annotationGroups);
 
 module.exports = api;
