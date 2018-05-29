@@ -1,3 +1,14 @@
+const {HeaderNames} = require('../common/config');
+
+const allowHeaders = [
+    'X-Requested-With',
+    'withCredentials',
+    'Content-Type',
+    HeaderNames.Client,
+    HeaderNames.UserToken,
+    HeaderNames.AppVersion
+].join(',');
+
 module.exports = (req, res, next) => {
     console.log("------------");
     let ip = req.ip;
@@ -18,7 +29,7 @@ module.exports = (req, res, next) => {
         res.set('Access-Control-Allow-Credentials', 'true');
         if (req.method === 'OPTIONS') {
             res.set('Access-Control-Allow-Headers',
-                'X-Requested-With,withCredentials,Content-Type');
+                allowHeaders);
             res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
             req.session = null;
         }

@@ -13,6 +13,14 @@ let handles = restful.simpleHandles(AnnotationFamily, {
     childExistsMsg: 'Annotation Exists'
 });
 
+
+async function candidates(req, res, next) {
+    let fas = await AnnotationFamily.coll()
+        .find({status: {$ne: 'B'}}, {name: 1})
+        .toArray();
+    res.json(fas);
+}
+
 function getDetail(req, res, next) {
     let familyId = req.params._id;
     let fp = AnnotationFamily.getById(familyId);
@@ -56,6 +64,7 @@ async function clone(req, res, next) {
 }
 
 
+router.get('/candidates', wrapAsyncOne(candidates));
 // router.get('/default', getDefault);
 router.get('/:_id/detail', getDetail);
 router.post('/:_id/clone', wrapAsyncOne(clone));

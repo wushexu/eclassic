@@ -56,7 +56,7 @@ router.get('/:_id/detail', function (req, res, next) {
     const cp = Chap.getById(chapId);
     const pp = Para.coll()
         .find({chapId})
-        .project({chapId: 0, no: 0})
+        .project({content: 1, trans: 1})
         .sort({no: 1})
         .toArray();
     Promise.all([cp, pp])

@@ -29,7 +29,7 @@ async function chapDetail(req, res, next) {
 
     chap.paras = await Para.coll()
         .find({chapId})
-        .project({chapId: 0})
+        .project({content: 1, trans: 1, no: 1, version: 1})
         .sort({no: 1}).toArray();
 
     res.json(chap);

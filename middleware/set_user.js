@@ -3,6 +3,9 @@ const {errorHandler} = require('../common/helper');
 const {HeaderNames, SessionKeys} = require('../common/config');
 
 module.exports = async (req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
     let user = null;
     let uid = req.session && req.session[SessionKeys.UserId];
     if (uid) {

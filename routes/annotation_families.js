@@ -11,19 +11,9 @@ async function index(req, res, next) {
     res.json(afs);
 }
 
-/*function getDefault(req, res, next) {
-    AnnotationFamily.coll()
-        .findOne({isDefault: true, status: {$ne: 'B'}})
-        .then(af => {
-            res.send(af);
-        }).catch(next);
-}*/
-
-
 function getDetail(req, res, next) {
     let familyId = req.params._id;
-    let fp = AnnotationFamily.coll()
-        .findOne({familyId, status: {$ne: 'B'}});
+    let fp = AnnotationFamily.getById(familyId);
     let gp = AnnotationGroup.coll()
         .find({familyId})
         .sort({no: 1})
@@ -32,7 +22,7 @@ function getDetail(req, res, next) {
 
     Promise.all([fp, gp])
         .then(function ([family, groups]) {
-            if (family) {
+            if (family || family.status === 'B') {
                 family.groups = groups;
             }
             res.json(family);
@@ -41,7 +31,6 @@ function getDetail(req, res, next) {
 
 
 router.get('/', wrapAsyncOne(index));
-// router.get('/default', getDefault);
 router.get('/:_id/detail', getDetail);
 
 
