@@ -27,13 +27,12 @@ function getOne(req, res, next) {
 
 async function sampleWords(req, res, next) {
     let code = req.params.code;
-    let wc = await WordCategory.coll().findOne({code},
-        {_id: 0, dictCategoryKey: 1, dictCategoryValue: 1});
+    let wc = await WordCategory.coll().findOne({code});
     if (!wc) {
         res.json([]);
     }
 
-    let filter = {['categories.' + wc.dictCategoryKey]: wc.dictCategoryValue};
+    let filter = WordCategory.buildFilter(wc);
     let limit = getLimit(req, 20, 100);
 
     let wordCount = wc.wordCount || 800;
@@ -50,14 +49,13 @@ async function sampleWords(req, res, next) {
 
 async function wordList(req, res, next) {
     let code = req.params.code;
-    let wc = await WordCategory.coll().findOne({code},
-        {_id: 0, dictCategoryKey: 1, dictCategoryValue: 1});
+    let wc = await WordCategory.coll().findOne({code});
     if (!wc) {
         res.json([]);
     }
 
-    let entries = await Dict.find({['categories.' + wc.dictCategoryKey]: wc.dictCategoryValue},
-        {_id: 0, word: 1});
+    let filter = WordCategory.buildFilter(wc);
+    let entries = await Dict.find(filter, {_id: 0, word: 1});
     let words = entries.map(e => e.word);
     res.json(words);
 }

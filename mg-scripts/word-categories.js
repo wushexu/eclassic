@@ -1,25 +1,50 @@
+function buildFilter(wordCategory) {
+    let fk = 'categories.' + wordCategory.dictKey;
+    let val = wordCategory.dictValue;
+    let op = wordCategory.dictOperator;
+    let filter = {};
+    if (!op) {
+        filter[fk] = val;
+    } else if (['gt', 'gte', 'lt', 'lte', 'ne'].indexOf(op) >= 0) {
+        filter[fk] = {['$' + op]: val}
+    } else if (op === 'exist') {
+        filter[fk] = {$exist: true};
+    } else if (op === 'not-exist') {
+        filter[fk] = {$exist: false};
+    } else {
+        console.log('unknown key: ' + fk);
+        filter[fk] = val;
+    }
+    return filter;
+}
+
+
 function createRecords() {
 
     let categories = [];
     let no = 1;
 
-    let addCategory = (dictCategoryKey, dictCategoryValue, code, name, extendTo = null) => {
-        let wc = {code, name, dictCategoryKey, dictCategoryValue};
+    let addCategory = (dictKey, dictValue, code, name, extendTo = null) => {
+        let wc = {code, name, dictKey, dictValue, extendTo};
         wc.description = '';
         wc.wordCount = 0;
-        wc.extendTo = extendTo;
         wc.extendedWordCount = 0;
-        wc.isFrequency = dictCategoryValue === 1000;
-        wc.useAsUserBase = !wc.isFrequency && dictCategoryKey !== 'haici';
+        wc.isFrequency = dictValue === 1000;
+        wc.useAsUserBase = !wc.isFrequency && dictKey !== 'haici';
         wc.version = 1;
         wc.no = no++;
         categories.push(wc);
+        return wc;
     };
 
     addCategory('junior', 1, 'junior1', '初级');
-    addCategory('junior', 2, 'junior2', '基础', 'junior1');
+    addCategory('junior', 2, 'junior2', '中级', 'junior1');
+    let basic = addCategory('junior', 0, 'basic', '基础');
+    basic.dictOperator = 'gt';
     addCategory('cet', 4, 'cet4', 'CET4', 'junior2');
     addCategory('cet', 6, 'cet6', 'CET6', 'cet4');
+    let cet = addCategory('cet', 0, 'cet', 'CET');
+    cet.dictOperator = 'gt';
     addCategory('gre', 1, 'gre', 'GRE', 'junior2');
     addCategory('yasi', 1, 'yasi', '雅思', 'junior2');
     addCategory('pro', 1, 'pro', '专英', 'cet6');
@@ -31,7 +56,6 @@ function createRecords() {
     addCategory('coca', 1000, 'coca', '当代美国英语语料库');
     addCategory('bnc', 1000, 'bnc', '英国国家语料库');
     addCategory('anc', 1000, 'anc', '美国国家语料库');
-
 
     let bulkOperations = categories.map(cat => {
         return {insertOne: {document: cat}};
@@ -45,7 +69,8 @@ function createRecords() {
 
 function evaluateWordCount() {
     db.word_categories.find({isFrequency: false}).forEach(function (wc) {
-        let wordCount = db.dict.find({['categories.' + wc.dictCategoryKey]: wc.dictCategoryValue}).count();
+        let filter = buildFilter(wc);
+        let wordCount = db.dict.find(filter).count();
         db.word_categories.update({code: wc.code}, {$set: {wordCount}});
     });
 }
@@ -91,6 +116,6 @@ function evaluateExtendedWordCount() {
 
 }
 
-createRecords();
-evaluateWordCount();
+// createRecords();
+// evaluateWordCount();
 evaluateExtendedWordCount();

@@ -3,6 +3,7 @@ let router = express.Router();
 
 let {wrapAsyncOne, getLimit} = require('../../common/helper');
 let restful = require('./common/rest');
+let sorter = require('./common/sorter');
 let Dict = require('../../models/dict');
 let WordCategory = require('../../models/word_category');
 
@@ -10,16 +11,18 @@ let WordCategory = require('../../models/word_category');
 let handles = restful.simpleHandles(WordCategory);
 restful.restful(router, handles);
 
+let actions = sorter.sortable(WordCategory);
+sorter.sort(router, actions);
+
 
 async function sampleWords(req, res, next) {
     let code = req.params.code;
-    let wc = await WordCategory.coll().findOne({code},
-        {_id: 0, dictCategoryKey: 1, dictCategoryValue: 1});
+    let wc = await WordCategory.coll().findOne({code});
     if (!wc) {
         res.json([]);
     }
 
-    let filter = {['categories.' + wc.dictCategoryKey]: wc.dictCategoryValue};
+    let filter = WordCategory.buildFilter(wc);
     let limit = getLimit(req, 20, 100);
 
     let skip;

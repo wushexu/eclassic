@@ -22,7 +22,7 @@ function getDetail(req, res, next) {
 
     Promise.all([fp, gp])
         .then(function ([family, groups]) {
-            if (family || family.status === 'B') {
+            if (family && family.status !== 'B') {
                 family.groups = groups;
             }
             res.json(family);
