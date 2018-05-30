@@ -9,7 +9,7 @@ let dict = require('./routes/dict');
 let voca = require('./routes/vocabulary');
 let userBooks = require('./routes/user_books');
 let wordCategories = require('./routes/word_categories');
-let userBaseVoca = require('./routes/user_base_voca');
+let userPreferences = require('./routes/user_preferences');
 let annotationFamilies = require('./routes/annotation_families');
 
 function authorize(req, res, next) {
@@ -28,7 +28,7 @@ function authorize(req, res, next) {
         if (url.startsWith('/voca')
             || url.startsWith('/user_books')
             || url.startsWith('/word_categories')
-            || url.startsWith('/user_base_voca')) {
+            || url.startsWith('/user_preferences')) {
             return eh({status: 401, message: 'Need Login.'});
         }
         if (req.method !== 'GET') {
@@ -50,7 +50,7 @@ api.use('/dict', dict);
 api.use('/voca', voca);
 api.use('/user_books', userBooks);
 api.use('/word_categories', wordCategories);
-api.use('/user_base_voca', userBaseVoca);
+api.use('/user_preferences', userPreferences);
 api.use('/annotation_families', annotationFamilies);
 
 module.exports = api;
