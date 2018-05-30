@@ -1,17 +1,29 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne, idString} = require('../../common/helper');
+let {wrapAsync, idString} = require('../../common/helper');
 let restful = require('./common/rest');
+let Book = require('../../models/book');
 let AnnotationGroup = require('../../models/annotation_group');
 let AnnotationFamily = require('../../models/annotation_family');
 
 
-let handles = restful.simpleHandles(AnnotationFamily, {
-    ChildModel: AnnotationGroup,
-    parentFieldInChild: 'familyId',
-    childExistsMsg: 'Annotation Exists'
-});
+let handles = restful.simpleHandles(AnnotationFamily);
+
+
+async function destroy(req, res, next) {
+    let familyId = req.params._id;
+    let bookExists = await Book.exists({annotationFamilyId: familyId});
+    if (bookExists) {
+        res.json({ok: 0, message: 'Being in Use.'});
+        return;
+    }
+    await AnnotationFamily.remove(familyId);
+    await AnnotationGroup.coll().deleteMany({familyId});
+    res.json({ok: 1});
+}
+
+handles.destroy = wrapAsync(destroy);
 
 
 async function candidates(req, res, next) {
@@ -44,9 +56,9 @@ async function clone(req, res, next) {
     let family = await AnnotationFamily.getById(id);
     let cloned = Object.assign({}, family);
     delete cloned._id;
-    cloned.name = family.name + '.bak';
+    cloned.name = family.name + '.c';
     cloned.isDefault = false;
-    cloned.status = 'B';
+    // cloned.status = 'B';
     AnnotationFamily.create(cloned);
     let clonedId = idString(cloned._id);
 
@@ -64,10 +76,10 @@ async function clone(req, res, next) {
 }
 
 
-router.get('/candidates', wrapAsyncOne(candidates));
+router.get('/candidates', wrapAsync(candidates));
 // router.get('/default', getDefault);
 router.get('/:_id/detail', getDetail);
-router.post('/:_id/clone', wrapAsyncOne(clone));
+router.post('/:_id/clone', wrapAsync(clone));
 
 
 restful.restful(router, handles);

@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-const {reqParam, wrapAsyncOne, idString} = require('../common/helper');
+const {reqParam, wrapAsync, idString} = require('../common/helper');
 
 router.get(['/', '/f'], function (req, res, next) {
     res.render('index');
@@ -33,6 +33,6 @@ async function resetPass(req, res, next) {
     res.json({ok: 1});
 }
 
-router.post('/reset_pass', wrapAsyncOne(resetPass));
+router.post('/reset_pass', wrapAsync(resetPass));
 
 module.exports = router;

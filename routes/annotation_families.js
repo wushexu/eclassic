@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne} = require('../common/helper');
+let {wrapAsync} = require('../common/helper');
 let AnnotationGroup = require('../models/annotation_group');
 let AnnotationFamily = require('../models/annotation_family');
 
@@ -30,7 +30,7 @@ function getDetail(req, res, next) {
 }
 
 
-router.get('/', wrapAsyncOne(index));
+router.get('/', wrapAsync(index));
 router.get('/:_id/detail', getDetail);
 
 

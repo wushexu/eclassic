@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne} = require('../common/helper');
+let {wrapAsync} = require('../common/helper');
 let {canReadChap} = require('../common/permissions');
 
 let Chap = require('../models/chap');
@@ -37,6 +37,6 @@ async function chapDetail(req, res, next) {
 
 
 router.get('/:_id', getChap);
-router.get('/:_id/detail', wrapAsyncOne(chapDetail));
+router.get('/:_id/detail', wrapAsync(chapDetail));
 
 module.exports = router;

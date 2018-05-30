@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 
 let Dict = require('../models/dict');
-let {wrapAsyncOne} = require('../common/helper');
+let {wrapAsync} = require('../common/helper');
 let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 
 async function getEntry(req, res, next) {
@@ -51,6 +51,6 @@ async function getEntry(req, res, next) {
 }
 
 
-router.get('/:word', wrapAsyncOne(getEntry));
+router.get('/:word', wrapAsync(getEntry));
 
 module.exports = router;

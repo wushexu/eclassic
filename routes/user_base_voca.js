@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 
 let UserBaseVocabulary = require('../models/user_base_vocabulary');
-let {wrapAsyncOne, modelIdString} = require('../common/helper');
+let {wrapAsync, modelIdString} = require('../common/helper');
 
 
 async function list(req, res, next) {
@@ -40,7 +40,7 @@ async function reset(req, res, next) {
 }
 
 
-router.get('/', wrapAsyncOne(list));
-router.post('/', wrapAsyncOne(reset));
+router.get('/', wrapAsync(list));
+router.post('/', wrapAsync(reset));
 
 module.exports = router;

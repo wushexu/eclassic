@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne,modelIdString} = require('../common/helper');
+let {wrapAsync,modelIdString} = require('../common/helper');
 let UserBook = require('../models/user_book');
 
 async function myBooks(req, res, withChaps) {
@@ -36,8 +36,8 @@ async function myBookChaps(req, res, next) {
     res.json(userBook);
 }
 
-router.get('/', wrapAsyncOne(myBooksWithoutChaps));
-router.get('/withChaps', wrapAsyncOne(myBookWithChaps));
-router.get('/:bookId', wrapAsyncOne(myBookChaps));
+router.get('/', wrapAsync(myBooksWithoutChaps));
+router.get('/withChaps', wrapAsync(myBookWithChaps));
+router.get('/:bookId', wrapAsync(myBookChaps));
 
 module.exports = router;

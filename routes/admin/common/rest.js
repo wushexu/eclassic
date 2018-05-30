@@ -1,4 +1,4 @@
-const {extractFields, sendMgResult, wrapAsync} = require('../../../common/helper');
+const {extractFields, sendMgResult, wrapAsyncs} = require('../../../common/helper');
 const validate = require('../../../middleware/validate');
 const {maxNo, sequenceInterval} = require('./sorter');
 
@@ -60,7 +60,7 @@ function simpleHandles(Model, options = {}) {
     }
 
     [index, create, show, update, destroy] =
-        wrapAsync(index, create, show, update, destroy);
+        wrapAsyncs(index, create, show, update, destroy);
 
     if (requiredFields) {
         create = [validate.required(requiredFields), create];

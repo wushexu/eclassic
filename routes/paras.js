@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {getLimit, wrapAsyncOne, modelIdString} = require('../common/helper');
+let {getLimit, wrapAsync, modelIdString} = require('../common/helper');
 let {canReadChap, evaluateUserContents} = require('../common/permissions');
 
 let Chap = require('../models/chap');
@@ -58,7 +58,7 @@ async function getPara(req, res, next) {
     return res.json(para);
 }
 
-router.get('/search/:word', wrapAsyncOne(search));
-router.get('/:_id', wrapAsyncOne(getPara));
+router.get('/search/:word', wrapAsync(search));
+router.get('/:_id', wrapAsync(getPara));
 
 module.exports = router;

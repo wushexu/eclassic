@@ -3,7 +3,7 @@ let router = express.Router();
 let reverse = require('lodash/reverse');
 const {
     extractFields, getLimit, sendMgResult,
-    wrapAsync, wrapAsyncOne
+    wrapAsyncs, wrapAsync
 } = require('../../common/helper');
 let Dict = require('../../models/dict');
 let restful = require('./common/rest');
@@ -265,12 +265,12 @@ function updateCategories(req, res, next) {
 
 
 router.get('/search/:key', search);
-router.get('/:word/basic', wrapAsyncOne(getBasicAsync));
-router.get('/:word/categories', wrapAsyncOne(getCategories));
+router.get('/:word/basic', wrapAsync(getBasicAsync));
+router.get('/:word/categories', wrapAsync(getCategories));
 router.patch('/:word/categories', updateCategories);
 
 let [show, create, update, destroy] =
-    wrapAsync(showAsync, createAsync, updateAsync, destroyAsync);
+    wrapAsyncs(showAsync, createAsync, updateAsync, destroyAsync);
 restful.restful(router, {index, create, show, update, destroy});
 
 module.exports = router;

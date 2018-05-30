@@ -7,7 +7,7 @@ const UserBook = require('../../models/user_book');
 const validate = require('../../middleware/validate');
 const {
     reqParam, extractFields, getLimit,
-    errorHandler, wrapAsyncOne
+    errorHandler, wrapAsync
 } = require('../../common/helper');
 
 let handles = restful.simpleHandles(User, {
@@ -68,8 +68,8 @@ function checkExists(req, res, next) {
         .catch(errorHandler(req, res));
 }
 
-handles.index = wrapAsyncOne(index);
-handles.show = wrapAsyncOne(show);
+handles.index = wrapAsync(index);
+handles.show = wrapAsync(show);
 
 handles.create = validate.appendValidator(
     [nameValidator, passValidator, checkExists],
@@ -115,6 +115,6 @@ function userBooks(req, res, next) {
 router.get('/:_id/books', userBooks);
 
 restful.restful(router, handles);
-router.post('/:_id/reset_pass', wrapAsyncOne(resetPass));
+router.post('/:_id/reset_pass', wrapAsync(resetPass));
 
 module.exports = router;

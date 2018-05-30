@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne,modelIdString} = require('../common/helper');
+let {wrapAsync,modelIdString} = require('../common/helper');
 
 let Book = require('../models/book');
 let Chap = require('../models/chap');
@@ -81,8 +81,8 @@ async function bookDetail(req, res, next) {
 }
 
 
-router.get('/', wrapAsyncOne(allBooks));
+router.get('/', wrapAsync(allBooks));
 router.get('/:_id', getBook);
-router.get('/:_id/detail', wrapAsyncOne(bookDetail));
+router.get('/:_id/detail', wrapAsync(bookDetail));
 
 module.exports = router;

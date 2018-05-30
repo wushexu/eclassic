@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsyncOne, getLimit} = require('../../common/helper');
+let {wrapAsync, getLimit} = require('../../common/helper');
 let restful = require('./common/rest');
 let sorter = require('./common/sorter');
 let Dict = require('../../models/dict');
@@ -42,6 +42,6 @@ async function sampleWords(req, res, next) {
     res.json(words);
 }
 
-router.post('/:code/sample', wrapAsyncOne(sampleWords));
+router.post('/:code/sample', wrapAsync(sampleWords));
 
 module.exports = router;

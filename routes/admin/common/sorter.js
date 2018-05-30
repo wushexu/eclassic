@@ -1,4 +1,4 @@
-let {extractFields, readModels, sendMgResult, wrapAsync} = require('../../../common/helper');
+let {extractFields, readModels, sendMgResult, wrapAsyncs} = require('../../../common/helper');
 
 const sequenceInterval = 1024;
 const sequenceSeed = 10000;
@@ -234,7 +234,7 @@ function sortable(Model, scopeField) {
         createManyBeforeOrAfter(req, res, next, 'after').catch(next);
     }
 
-    [swapOrder] = wrapAsync(swapOrder);
+    [swapOrder] = wrapAsyncs(swapOrder);
 
     return {
         swapOrder,

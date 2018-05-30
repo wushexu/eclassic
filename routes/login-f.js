@@ -3,7 +3,7 @@ let router = express.Router();
 // let debug = require('debug')('cr:session');
 const {SessionKeys} = require('../common/config');
 
-let {wrapAsyncOne, idString} = require('../common/helper');
+let {wrapAsync, idString} = require('../common/helper');
 const validate = require('../middleware/validate');
 const User = require('../models/user');
 
@@ -30,7 +30,7 @@ async function login(req, res, next) {
 // Login
 router.post('/',
     validate.required(['name', 'pass']),
-    wrapAsyncOne(login)
+    wrapAsync(login)
 );
 
 router.delete('/', (req, res) => {

@@ -3,7 +3,7 @@ let router = express.Router();
 
 let Dict = require('../models/dict');
 let WordCategory = require('../models/word_category');
-let {wrapAsyncOne, getLimit} = require('../common/helper');
+let {wrapAsync, getLimit} = require('../common/helper');
 
 
 function allCategories(req, res, next) {
@@ -63,7 +63,7 @@ async function wordList(req, res, next) {
 
 router.get('/', allCategories);
 router.get('/:code', getOne);
-router.post('/:code/sample', wrapAsyncOne(sampleWords));
-router.post('/:code/all', wrapAsyncOne(wordList));
+router.post('/:code/sample', wrapAsync(sampleWords));
+router.post('/:code/all', wrapAsync(wordList));
 
 module.exports = router;

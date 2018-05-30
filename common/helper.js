@@ -100,14 +100,14 @@ function sendMgResult(res, r) {
     res.send({ok: r.ok, n: r.n});
 }
 
-function wrapAsync(...asyncFns) {
+function wrapAsyncs(...asyncFns) {
     return asyncFns.map(fn => function (req, res, next) {
             fn(req, res, next).catch(next);
         }
     );
 }
 
-function wrapAsyncOne(fn) {
+function wrapAsync(fn) {
     return function (req, res, next) {
         fn(req, res, next).catch(next);
     };
@@ -137,8 +137,8 @@ module.exports = {
     emptyObject,
     errorHandler,
     sendMgResult,
+    wrapAsyncs,
     wrapAsync,
-    wrapAsyncOne,
     idString,
     modelIdString
 };
