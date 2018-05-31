@@ -7,13 +7,8 @@ let {wrapAsync, getLimit} = require('../common/helper');
 
 
 function allCategories(req, res, next) {
-    let filter = {};
-    let ub = req.query.userBase;
-    if (typeof ub !== 'undefined') {
-        filter.useAsUserBase = true;
-    }
     WordCategory.coll()
-        .find(filter, {_id: 0})
+        .find({}, {_id: 0})
         .sort({no: 1})
         .toArray()
         .then(wcs => res.json(wcs)).catch(next);
