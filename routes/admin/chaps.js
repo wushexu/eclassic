@@ -38,7 +38,7 @@ async function createParas(req, res, next) {
     });
 
     Promise.all(promises)
-        .then(_ => res.send(models))
+        .then(_ => res.json(models))
         .catch(next);
 }
 
@@ -62,7 +62,7 @@ router.get('/:_id/detail', function (req, res, next) {
     Promise.all([cp, pp])
         .then(function ([chap, paras]) {
             chap.paras = paras;
-            res.send(chap);
+            res.json(chap);
         }).catch(next);
 });
 

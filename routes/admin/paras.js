@@ -43,7 +43,7 @@ async function mergeUp(req, res, next) {
 
     let source = await Para.getById(req.params._id);
     if (!source) {
-        res.send({ok: 0});
+        res.json({ok: 0});
         return;
     }
     let target = await Para.coll()
@@ -54,7 +54,7 @@ async function mergeUp(req, res, next) {
             sort: {no: -1}
         });
     if (!target) {
-        res.send({ok: 0});
+        res.json({ok: 0});
         return;
     }
 
@@ -67,7 +67,7 @@ async function mergeDown(req, res, next) {
 
     let source = await Para.getById(req.params._id);
     if (!source) {
-        res.send({ok: 0});
+        res.json({ok: 0});
         return;
     }
     let target = await Para.coll()
@@ -78,7 +78,7 @@ async function mergeDown(req, res, next) {
             sort: {no: 1}
         });
     if (!target) {
-        res.send({ok: 0});
+        res.json({ok: 0});
         return;
     }
 

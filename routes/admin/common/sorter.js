@@ -75,7 +75,7 @@ function sortable(Model, scopeField) {
             let r = await swapNo(m, adjacent);
             sendMgResult(res, r);
         } else {
-            res.send({ok: 0});
+            res.json({ok: 0});
         }
     }
 
@@ -177,7 +177,7 @@ function sortable(Model, scopeField) {
 
         let seqs = await createSeqSpace(target, dir);
         if (!seqs) {
-            res.send({ok: 0});
+            res.json({ok: 0});
             return;
         }
         nm.no = seqs[0];
@@ -186,7 +186,7 @@ function sortable(Model, scopeField) {
             nm[scopeField] = target[scopeField];
         }
         await Model.create(nm);
-        res.send(nm);
+        res.json(nm);
     }
 
     function createBefore(req, res, next) {
@@ -206,7 +206,7 @@ function sortable(Model, scopeField) {
 
         let seqs = await createSeqSpace(target, dir, models.length);
         if (!seqs) {
-            res.send([]);
+            res.json([]);
             return;
         }
 
@@ -220,7 +220,7 @@ function sortable(Model, scopeField) {
         });
 
         Promise.all(promises)
-            .then(_ => res.send(models))
+            .then(_ => res.json(models))
             .catch(next);
     }
 
@@ -268,7 +268,7 @@ function childResource(ChildModel, scopeField) {
             .sort({no: 1})
             .project({no: 0})
             .toArray();
-        res.send(ms);
+        res.json(ms);
     }
 
     async function create(req, res, next) {
@@ -278,7 +278,7 @@ function childResource(ChildModel, scopeField) {
         let no = await maxNo(ChildModel, {[scopeField]: m[scopeField]});
         m.no = no + sequenceInterval;
         let r = await ChildModel.create(m);
-        res.send(m);
+        res.json(m);
     }
 
     return {list, create};

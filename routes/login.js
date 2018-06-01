@@ -12,7 +12,7 @@ async function login(req, res, next) {
     let user = await User.authenticate(name, pass);
     if (!user) {
         let message = 'Invalid Credentials.';
-        res.send({ok: 0, message: message});
+        res.json({ok: 0, message: message});
         return;
     }
 
@@ -23,13 +23,13 @@ async function login(req, res, next) {
     req.session.save(function (err) {
         if (err) {
             console.error("err:" + err);
-            res.send({ok: 0, message: err.message});
+            res.json({ok: 0, message: err.message});
         } else {
             let result = {ok: 1};
             if (user.role) {
                 result.role = user.role;
             }
-            res.send(result);
+            res.json(result);
         }
     });
 }
@@ -44,9 +44,9 @@ router.delete('/', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             console.error("err:" + err);
-            res.send({ok: 0, message: err.message});
+            res.json({ok: 0, message: err.message});
         } else {
-            res.send({ok: 1});
+            res.json({ok: 1});
         }
     });
 });
@@ -58,9 +58,9 @@ router.get('/userinfo', function (req, res, next) {
         if (u.role) {
             result.role = u.role;
         }
-        res.send(result);
+        res.json(result);
     } else {
-        res.send({login: false});
+        res.json({login: false});
     }
 });
 

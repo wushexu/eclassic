@@ -43,9 +43,9 @@ router.delete('/', (req, res) => {
 router.get('/userinfo', function (req, res, next) {
     if (req.user) {
         let u = req.user;
-        res.send({login: true, name: u.name});
+        res.json({login: true, name: u.name});
     } else {
-        res.send({login: false});
+        res.json({login: false});
     }
 });
 

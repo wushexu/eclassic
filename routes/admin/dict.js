@@ -2,8 +2,7 @@ let express = require('express');
 let router = express.Router();
 let reverse = require('lodash/reverse');
 const {
-    extractFields, getLimit, sendMgResult,
-    wrapAsyncs, wrapAsync
+    extractFields, getLimit, sendMgResult, isId, wrapAsyncs, wrapAsync
 } = require('../../common/helper');
 let Dict = require('../../models/dict');
 let restful = require('./common/rest');
@@ -74,7 +73,7 @@ function search(req, res, next) {
         if (searchPrevious) {
             ms = reverse(ms);
         }
-        res.send(ms);
+        res.json(ms);
     }).catch(next);
 }
 
@@ -91,11 +90,7 @@ function index(req, res, next) {
     }
     let limit = getLimit(req, 10, 100);
     p.limit(limit).toArray()
-        .then(ms => res.send(ms)).catch(next);
-}
-
-function isId(idOrWord) {
-    return /^[0-9a-z]{24}$/.test(idOrWord);
+        .then(ms => res.json(ms)).catch(next);
 }
 
 async function showAsync(req, res, next) {
@@ -112,7 +107,8 @@ async function showAsync(req, res, next) {
     let word = idOrWord;
     entry = await Dict.coll().findOne({word}, fields);
     if (!entry && word.toLowerCase() !== word) {
-        entry = await Dict.coll().findOne({word: word.toLowerCase()}, fields);
+        word = word.toLowerCase();
+        entry = await Dict.coll().findOne({word}, fields);
     }
     if (entry) {
         if (!entry.simple || entry.simple.length === 0) {
@@ -165,10 +161,10 @@ async function createAsync(req, res, next) {
     let existed = await Dict.coll().findOne({word}, {word: 1});
     if (existed) {
         await Dict.update(existed._id, entry);
-        res.send({_id: existed._id});
+        res.json({_id: existed._id});
     } else {
         await Dict.create(entry);
-        res.send(entry);
+        res.json(entry);
     }
 }
 

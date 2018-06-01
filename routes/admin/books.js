@@ -41,7 +41,7 @@ router.get('/:_id/detail', function (req, res, next) {
     Promise.all([bp, cp])
         .then(function ([book, chaps]) {
             book.chaps = chaps;
-            res.send(book);
+            res.json(book);
         }).catch(next);
 });
 

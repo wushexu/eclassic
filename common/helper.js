@@ -80,7 +80,7 @@ function errorHandler(req, res) {
         res.status(err.status || 500);
         res.format({
             json: () => {
-                res.send({ok: 0, message: err.message});
+                res.json({ok: 0, message: err.message});
             },
             html: () => {
                 res.locals.message = err.message;
@@ -97,7 +97,7 @@ function sendMgResult(res, r) {
     }
     console.log(r);
     // console.log('Mongo Result: ' + JSON.stringify(r));
-    res.send({ok: r.ok, n: r.n});
+    res.json({ok: r.ok, n: r.n});
 }
 
 function wrapAsyncs(...asyncFns) {
@@ -113,6 +113,10 @@ function wrapAsync(fn) {
     };
 }
 
+
+function isId(str) {
+    return /^[0-9a-z]{24}$/.test(str);
+}
 
 function idString(id) {
     if (typeof id === 'object') {
@@ -139,6 +143,7 @@ module.exports = {
     sendMgResult,
     wrapAsyncs,
     wrapAsync,
+    isId,
     idString,
     modelIdString
 };

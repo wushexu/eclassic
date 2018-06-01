@@ -17,7 +17,7 @@ function simpleHandles(Model, options = {}) {
             p = p.sort({no: 1}).project({no: 0});
         }
         let ms = await p.toArray();
-        res.send(ms);
+        res.json(ms);
     }
 
     async function create(req, res, next) {
@@ -29,7 +29,7 @@ function simpleHandles(Model, options = {}) {
         }
 
         await Model.create(m);
-        res.send(m);
+        res.json(m);
     }
 
     async function show(req, res, next) {
@@ -51,7 +51,7 @@ function simpleHandles(Model, options = {}) {
             let childrenExists = await ChildModel.exists(filter);
             if (childrenExists) {
                 let message = childExistsMsg || 'Child Resource Exists';
-                res.send({ok: 0, message: message});
+                res.json({ok: 0, message: message});
                 return;
             }
         }

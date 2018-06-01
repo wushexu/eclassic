@@ -40,7 +40,7 @@ async function index(req, res, next) {
     cursor = cursor.limit(limit);
     let users = await cursor.toArray();
 
-    res.send(users);
+    res.json(users);
 }
 
 async function show(req, res, next) {
@@ -79,7 +79,7 @@ router.all('/find', (req, res, next) => {
     let pairs = extractFields(req, ['name', 'role', 'gender']);
     User.find(pairs)
         .then(users => {
-            res.send(users);
+            res.json(users);
         })
         .catch(next);
 });
@@ -108,7 +108,7 @@ function userBooks(req, res, next) {
     let userId = req.params._id;
     UserBook.find({userId}, {userId: 0, chaps: 0})
         .then(userBooks => {
-            res.send(userBooks);
+            res.json(userBooks);
         }).catch(next);
 }
 

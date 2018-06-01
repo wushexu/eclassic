@@ -2,18 +2,30 @@ let express = require('express');
 let router = express.Router();
 
 let Dict = require('../models/dict');
-let {wrapAsync} = require('../common/helper');
+let {wrapAsync, isId} = require('../common/helper');
 let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 
+
 async function getEntry(req, res, next) {
-    let fields = {_id: 0, word: 1, categories: 1, phonetics: 1, baseForms: 1, forms: 1, simple: 1};
-    if (typeof req.query.simple === 'undefined') {
+
+    let fields = {word: 1, categories: 1, phonetics: 1, baseForms: 1, forms: 1, simple: 1};
+    if (typeof req.query.complete !== 'undefined') {
         fields.complete = 1;
     }
-    let word = req.params.word;
-    let entry = await Dict.coll().findOne({word}, fields);
+
+    let entry;
+
+    let idOrWord = req.params.idOrWord;
+    if (isId(idOrWord)) {
+        entry = await Dict.getById(idOrWord, fields);
+        return res.json(entry);
+    }
+
+    let word = idOrWord;
+    entry = await Dict.coll().findOne({word}, fields);
     if (!entry && word.toLowerCase() !== word) {
-        entry = await Dict.coll().findOne({word: word.toLowerCase()}, fields);
+        word = word.toLowerCase();
+        entry = await Dict.coll().findOne({word}, fields);
     }
     if (entry) {
         if (!entry.simple || entry.simple.length === 0) {
@@ -50,7 +62,22 @@ async function getEntry(req, res, next) {
     res.json(entry);
 }
 
+async function getComplete(req, res, next) {
+    let _id = req.params._id;
+    let fields = {_id: 0, complete: 1};
+    let entry = await Dict.getById(_id, fields);
+    let complete;
+    if (entry) {
+        complete = entry.complete;
+    }
+    if (!complete) {
+        complete = [];
+    }
+    res.json(complete);
+}
 
-router.get('/:word', wrapAsync(getEntry));
+
+router.get('/:idOrWord', wrapAsync(getEntry));
+router.get('/:_id/complete', wrapAsync(getComplete));
 
 module.exports = router;
