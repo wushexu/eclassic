@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 
 let Dict = require('../models/dict');
-let {wrapAsync, isId} = require('../common/helper');
+let {wrapAsync, isId, getLimit} = require('../common/helper');
 let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 
 
@@ -77,7 +77,43 @@ async function getComplete(req, res, next) {
 }
 
 
+function search(req, res, next) {
+    let key = req.params.key;
+
+    let filter = {word: {$regex: `^${key}.*`}};
+
+    let query = req.query;
+    if (typeof query.phraseOnly !== 'undefined') {
+        filter.isPhrase = true;
+    } else if (typeof query.phrase === 'undefined') {
+        filter.isPhrase = false;
+    }
+    if (filter.isPhrase !== true) {
+        if (typeof query.basic !== 'undefined') {
+            filter['categories.junior'] = {$gt: 0};
+        }
+        if (typeof query.cet !== 'undefined') {
+            filter['categories.cet'] = {$gt: 0};
+        }
+        if (typeof query.gre !== 'undefined') {
+            filter['categories.gre'] = 1;
+        }
+    }
+
+    let fields = {_id: 0, word: 1};
+
+    let limit = getLimit(req, 8);
+    Dict.coll().find(filter)
+        .project(fields)
+        .limit(limit)
+        .toArray()
+        .then(ms => {
+            res.json(ms);
+        }).catch(next);
+}
+
 router.get('/:idOrWord', wrapAsync(getEntry));
 router.get('/:_id/complete', wrapAsync(getComplete));
+router.get('/search/:key', search);
 
 module.exports = router;
