@@ -19,7 +19,7 @@ async function sampleWords(req, res, next) {
     let code = req.params.code;
     let wc = await WordCategory.coll().findOne({code});
     if (!wc) {
-        res.json([]);
+        return res.json([]);
     }
 
     let filter = WordCategory.buildFilter(wc);

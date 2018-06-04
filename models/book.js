@@ -3,7 +3,7 @@ const {simpleCurd} = require('./db');
 
 let Book = simpleCurd('books');
 
-let requiredFields = ['name', 'status'],
+let requiredFields = ['name', 'code', 'status'],
     updateFields = requiredFields.concat(['zhName', 'author', 'zhAuthor', 'no', 'langType', 'description',
         'annotationFamilyId', 'tags', 'isFree', 'price', 'status', 'visibility', 'memo']),
     createFields = updateFields.concat(['originalId']);

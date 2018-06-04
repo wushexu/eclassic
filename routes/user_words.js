@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 
 let UserVocabulary = require('../models/user_vocabulary');
-let {sendMgResult,modelIdString} = require('../common/helper');
+let {sendMgResult, modelIdString} = require('../common/helper');
 
 function getOne(req, res, next) {
     let userId = modelIdString(req.user);
@@ -56,7 +56,7 @@ function addWord(req, res, next) {
         .catch(next);
 }
 
-function syncVocubulary(req, res, next) {
+/*function syncVocubulary(req, res, next) {
     let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
@@ -101,7 +101,7 @@ function syncVocubulary(req, res, next) {
         .bulkWrite(bulk)
         .then(r => sendMgResult(res, r))
         .catch(next);
-}
+}*/
 
 function updateWord(req, res, next) {
     let userId = modelIdString(req.user);
@@ -139,6 +139,6 @@ router.post('/', addWord);
 router.get('/:word', getOne);
 router.put('/:word', updateWord);
 router.delete('/:word', removeWord);
-router.post('/sync', syncVocubulary);
+// router.post('/sync', syncVocubulary);
 
 module.exports = router;

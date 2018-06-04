@@ -42,23 +42,30 @@ async function sampleWords(req, res, next) {
     res.json(words);
 }
 
-async function wordList(req, res, next) {
+async function allWords(req, res, next) {
     let code = req.params.code;
+
+    let categories = ['junior1', 'junior2', 'basic', 'cet4', 'cet6', 'cet', 'gre', 'yasi'];
+    if (categories.indexOf(code) === -1) {
+        return res.json([]);
+    }
+
     let wc = await WordCategory.coll().findOne({code});
     if (!wc) {
-        res.json([]);
+        return res.json([]);
     }
 
     let filter = WordCategory.buildFilter(wc);
-    let entries = await Dict.find(filter, {_id: 0, word: 1});
+    let entries = await Dict.coll().find(filter,
+        {_id: 0, word: 1})
+        .toArray();
     let words = entries.map(e => e.word);
     res.json(words);
 }
 
-
 router.get('/', allCategories);
 router.get('/:code', getOne);
 router.post('/:code/sample', wrapAsync(sampleWords));
-router.post('/:code/all', wrapAsync(wordList));
+router.post('/:code/loadAll', wrapAsync(allWords));
 
 module.exports = router;
