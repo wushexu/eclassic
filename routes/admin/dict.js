@@ -106,7 +106,7 @@ async function showAsync(req, res, next) {
     }
     let word = idOrWord;
     entry = await Dict.coll().findOne({word}, fields);
-    if (!entry && word.toLowerCase() !== word) {
+    if (!entry && /[A-Z]/.test(word)) {
         word = word.toLowerCase();
         entry = await Dict.coll().findOne({word}, fields);
     }
@@ -259,11 +259,52 @@ function updateCategories(req, res, next) {
     }).catch(next);
 }
 
+function loadBaseFormsAll(req, res, next) {
+    let entries = [];
+    let total = 0;
+
+    Dict.coll().find(
+        {baseForms: {$exists: true}},
+        {_id: 0, word: 1, baseForms: 1}
+    ).forEach(function (entry) {
+        total++;
+        let {word, baseForms} = entry;
+
+        if (!baseForms) {
+            return;
+        }
+
+        let wordLen = word.length;
+        baseForms = baseForms.filter(form => form.length <= wordLen + 2);
+
+        if (baseForms.length === 0) {
+            return;
+        }
+
+        let bases = guestBaseForms(word);
+        for (let base of bases) {
+            if (baseForms.indexOf(base) >= 0) {
+                return;
+            }
+        }
+        let stem = guestStem(word);
+        if (baseForms.indexOf(stem) >= 0) {
+            return;
+        }
+        let base = baseForms[0];
+        entries.push([word, base]);
+    }, function (err) {
+        console.log('done. total: ' + total + ', forms: ' + entries.length);
+        res.json(entries);
+    });
+}
+
 
 router.get('/search/:key', search);
 router.get('/:word/basic', wrapAsync(getBasicAsync));
 router.get('/:word/categories', wrapAsync(getCategories));
 router.patch('/:word/categories', updateCategories);
+router.get('/loadBaseFormsAll', loadBaseFormsAll);
 
 let [show, create, update, destroy] =
     wrapAsyncs(showAsync, createAsync, updateAsync, destroyAsync);

@@ -23,7 +23,7 @@ async function getEntry(req, res, next) {
 
     let word = idOrWord;
     entry = await Dict.coll().findOne({word}, fields);
-    if (!entry && word.toLowerCase() !== word) {
+    if (!entry && /[A-Z]/.test(word)) {
         word = word.toLowerCase();
         entry = await Dict.coll().findOne({word}, fields);
     }
@@ -112,8 +112,70 @@ function search(req, res, next) {
         }).catch(next);
 }
 
+async function loadBaseForms(req, res, next) {
+    let entries = [];
+    let total = 0;
+
+    let cetAndBelow = new Set();
+
+    let ws = await Dict.coll().find(
+        {
+            $or: [{'categories.junior': {$gt: 0}},
+                {'categories.cet': {$gt: 0}}]
+        },
+        {_id: 0, word: 1}
+    ).toArray();
+
+    for (let w of ws) {
+        cetAndBelow.add(w.word);
+    }
+
+    // console.log('cetAndBelow size: ' + cetAndBelow.size);
+
+    Dict.coll().find(
+        {baseForms: {$exists: true}},
+        {_id: 0, word: 1, baseForms: 1}
+    ).forEach(function (entry) {
+        total++;
+        let {word, baseForms} = entry;
+
+        if (!baseForms) {
+            return;
+        }
+
+        let wordLen = word.length;
+        baseForms = baseForms.filter(form => {
+            if (form.length > wordLen + 2) {
+                return false;
+            }
+            return cetAndBelow.has(form);
+        });
+
+        if (baseForms.length === 0) {
+            return;
+        }
+
+        let bases = guestBaseForms(word);
+        for (let base of bases) {
+            if (baseForms.indexOf(base) >= 0) {
+                return;
+            }
+        }
+        let stem = guestStem(word);
+        if (baseForms.indexOf(stem) >= 0) {
+            return;
+        }
+        let base = baseForms[0];
+        entries.push([word, base]);
+    }, function (err) {
+        console.log('done. total: ' + total + ', forms: ' + entries.length);
+        res.json(entries);
+    });
+}
+
 router.get('/:idOrWord', wrapAsync(getEntry));
 router.get('/:_id/complete', wrapAsync(getComplete));
 router.get('/search/:key', search);
+router.post('/loadBaseForms', wrapAsync(loadBaseForms));
 
 module.exports = router;

@@ -1,42 +1,60 @@
 function guestBaseForms(word) {
-    let stems = [];
+    let forms = [];
     let len = word.length;
     if (word.endsWith('s')) {
         if (word.endsWith('es')) {
             if (word.endsWith('ies')) {
-                stems.push(word.substring(0, len - 3) + 'y');
+                forms.push(word.substring(0, len - 3) + 'y');
             } else {
-                stems.push(word.substring(0, len - 2));
+                forms.push(word.substring(0, len - 2));
             }
         }
-        stems.push(word.substring(0, len - 1));
-        return stems;
+        forms.push(word.substring(0, len - 1));
+        return forms;
     }
 
     if (word.endsWith('ed')) {
         if (word[len - 3] === word[len - 4]) {
-            stems.push(word.substring(0, len - 3));
+            forms.push(word.substring(0, len - 3));
         } else {
-            stems.push(word.substring(0, len - 2));
+            forms.push(word.substring(0, len - 2));
         }
         if (word.endsWith('ied')) {
-            stems.push(word.substring(0, len - 3) + 'y');
+            forms.push(word.substring(0, len - 3) + 'y');
         } else {
-            stems.push(word.substring(0, len - 1));
+            forms.push(word.substring(0, len - 1));
         }
-        return stems;
+        return forms;
     }
 
     if (word.endsWith('ing')) {
         if (word[len - 4] === word[len - 5]) {
-            stems.push(word.substring(0, len - 4));
+            forms.push(word.substring(0, len - 4));
         } else {
             let st = word.substring(0, len - 3);
-            stems.push(st);
-            stems.push(st + 'e');
+            forms.push(st);
+            forms.push(st + 'e');
+        }
+        return forms;
+    }
+
+    if (word.endsWith('er')) {
+        forms.push(word.substring(0, len - 1));
+        forms.push(word.substring(0, len - 2));
+        return forms;
+    }
+
+    if (word.endsWith('est')) {
+        forms.push(word.substring(0, len - 2));
+        if (word.charAt(len - 4) === 'i') {
+            forms.push(word.substring(0, len - 4) + 'y');
+        } else if (word.charAt(len - 4) === word.charAt(len - 5)) {
+            forms.push(word.substring(0, len - 4));
+        } else {
+            forms.push(word.substring(0, len - 3));
         }
     }
-    return stems;
+    return forms;
 }
 
 function guestStem(word) {
