@@ -35,8 +35,30 @@ async function chapDetail(req, res, next) {
     res.json(chap);
 }
 
+async function paraVersions(req, res, next) {
+
+    const chapId = req.params._id;
+    const chap = await Chap.releasedChap(chapId);
+    if (!chap) {
+        return res.json(null);
+    }
+
+    let hasPermission = await canReadChap(req.user, chap);
+    if (!hasPermission) {
+        return res.json(null);
+    }
+
+    let paras = await Para.coll()
+        .find({chapId})
+        .project({version: 1})
+        .toArray();
+
+    res.json(paras);
+}
+
 
 router.get('/:_id', getChap);
 router.get('/:_id/detail', wrapAsync(chapDetail));
+router.get('/:_id/paraVersions', wrapAsync(paraVersions));
 
 module.exports = router;

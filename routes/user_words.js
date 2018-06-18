@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let UserVocabulary = require('../models/user_vocabulary');
+let UserWord = require('../models/user_word');
 let {sendMgResult, modelIdString} = require('../common/helper');
 
 function getOne(req, res, next) {
@@ -10,7 +10,7 @@ function getOne(req, res, next) {
         return res.json(null);
     }
     let word = req.params.word;
-    UserVocabulary.coll()
+    UserWord.coll()
         .findOne({userId, word})
         .then(userWord => res.json(userWord))
         .catch(next);
@@ -21,7 +21,7 @@ function getAll(req, res, next) {
     if (!userId) {
         return res.json([]);
     }
-    UserVocabulary.find({userId}, {userId: 0})
+    UserWord.find({userId}, {userId: 0})
         .then(voca => res.json(voca))
         .catch(next);
 }
@@ -44,7 +44,7 @@ function addWord(req, res, next) {
         '$set': newWord,
         $currentDate: {updatedAt: true}
     };
-    UserVocabulary.coll()
+    UserWord.coll()
         .updateOne({userId, word}, updater, {upsert: true})
         .then(r => {
             let result = {ok: 0};
@@ -97,7 +97,7 @@ function addWord(req, res, next) {
     if (bulk.length === 0) {
         return res.json({ok: 0});
     }
-    UserVocabulary.coll()
+    UserWord.coll()
         .bulkWrite(bulk)
         .then(r => sendMgResult(res, r))
         .catch(next);
@@ -117,7 +117,7 @@ function updateWord(req, res, next) {
         '$set': {familiarity},
         $currentDate: {updatedAt: true}
     };
-    UserVocabulary.coll()
+    UserWord.coll()
         .updateOne({userId, word}, updater)
         .then(r => sendMgResult(res, r))
         .catch(next);
@@ -129,7 +129,7 @@ function removeWord(req, res, next) {
         return res.json({ok: 0});
     }
     let word = req.params.word;
-    UserVocabulary.coll().deleteOne({userId, word})
+    UserWord.coll().deleteOne({userId, word})
         .then(r => sendMgResult(res, r))
         .catch(next);
 }

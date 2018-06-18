@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-let {wrapAsync,modelIdString} = require('../common/helper');
+let {wrapAsync, modelIdString} = require('../common/helper');
 
 let Book = require('../models/book');
 let Chap = require('../models/chap');
@@ -80,9 +80,25 @@ async function bookDetail(req, res, next) {
     res.json(book);
 }
 
+async function chapVersions(req, res, next) {
+    const bookId = req.params._id;
+    const bp = Book.releasedBook(bookId);
+    const cp = Chap.coll()
+        .find({bookId, status: 'R'})
+        .project({version: 1})
+        .toArray();
+    let [book, chaps] = await Promise.all([bp, cp]);
+    if (!book) {
+        return res.json(null);
+    }
+
+    res.json(chaps);
+}
+
 
 router.get('/', wrapAsync(allBooks));
 router.get('/:_id', getBook);
 router.get('/:_id/detail', wrapAsync(bookDetail));
+router.get('/:_id/chapVersions', wrapAsync(chapVersions));
 
 module.exports = router;

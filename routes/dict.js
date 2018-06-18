@@ -63,9 +63,17 @@ async function getEntry(req, res, next) {
 }
 
 async function getComplete(req, res, next) {
-    let _id = req.params._id;
     let fields = {_id: 0, complete: 1};
-    let entry = await Dict.getById(_id, fields);
+
+    let entry;
+
+    let idOrWord = req.params.idOrWord;
+    if (isId(idOrWord)) {
+        entry = await Dict.getById(idOrWord, fields);
+    } else {
+        entry = await Dict.coll().findOne({word: idOrWord}, fields);
+    }
+
     let complete;
     if (entry) {
         complete = entry.complete;
@@ -174,7 +182,7 @@ async function loadBaseForms(req, res, next) {
 }
 
 router.get('/:idOrWord', wrapAsync(getEntry));
-router.get('/:_id/complete', wrapAsync(getComplete));
+router.get('/:idOrWord/complete', wrapAsync(getComplete));
 router.get('/search/:key', search);
 router.post('/loadBaseForms', wrapAsync(loadBaseForms));
 

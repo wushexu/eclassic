@@ -25,10 +25,11 @@ async function login(req, res, next) {
             console.error("err:" + err);
             res.json({ok: 0, message: err.message});
         } else {
-            let result = {ok: 1};
+            let result = {ok: 1, nickName: user.nickName};
             if (user.role) {
                 result.role = user.role;
             }
+            //TODO: accessToken
             res.json(result);
         }
     });
@@ -54,10 +55,11 @@ router.delete('/', (req, res) => {
 router.get('/userinfo', function (req, res, next) {
     if (req.user) {
         let u = req.user;
-        let result = {login: true, name: u.name};
+        let result = {login: true, name: u.name, nickName: u.nickName};
         if (u.role) {
             result.role = u.role;
         }
+        //TODO: accessToken
         res.json(result);
     } else {
         res.json({login: false});

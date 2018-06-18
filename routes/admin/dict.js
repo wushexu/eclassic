@@ -304,7 +304,7 @@ router.get('/search/:key', search);
 router.get('/:word/basic', wrapAsync(getBasicAsync));
 router.get('/:word/categories', wrapAsync(getCategories));
 router.patch('/:word/categories', updateCategories);
-router.get('/loadBaseFormsAll', loadBaseFormsAll);
+router.post('/loadBaseFormsAll', loadBaseFormsAll);
 
 let [show, create, update, destroy] =
     wrapAsyncs(showAsync, createAsync, updateAsync, destroyAsync);

@@ -4,7 +4,7 @@ const {SiteSalt} = require('../common/config');
 
 let User = simpleCurd('users');
 
-let requiredFields = ['name', 'pass'],
+let requiredFields = ['name', 'pass', 'nickName'],
     updateFields = ['gender', 'role', 'status', 'accessToken'],
     createFields = requiredFields.concat(updateFields);
 
