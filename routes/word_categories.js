@@ -8,7 +8,7 @@ let {wrapAsync, getLimit} = require('../common/helper');
 
 function allCategories(req, res, next) {
     WordCategory.coll()
-        .find({}, {_id: 0})
+        .find({})
         .sort({no: 1})
         .toArray()
         .then(wcs => res.json(wcs)).catch(next);

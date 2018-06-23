@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 
 let UserWord = require('../models/user_word');
-let {sendMgResult, modelIdString} = require('../common/helper');
+let {sendMgResult, modelIdString, wrapAsync} = require('../common/helper');
 
 function getOne(req, res, next) {
     let userId = modelIdString(req.user);
@@ -26,7 +26,7 @@ function getAll(req, res, next) {
         .catch(next);
 }
 
-function addWord(req, res, next) {
+async function addWord(req, res, next) {
     let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
@@ -35,73 +35,21 @@ function addWord(req, res, next) {
     if (!word) {
         return res.json({ok: 0});
     }
-    if (!familiarity) {
-        familiarity = 1;
-    }
+
     let newWord = {bookId, chapId, paraId, familiarity};
 
-    let updater = {
-        '$set': newWord,
-        $currentDate: {updatedAt: true}
-    };
-    UserWord.coll()
-        .updateOne({userId, word}, updater, {upsert: true})
-        .then(r => {
-            let result = {ok: 0};
-            if (r.upsertedId) {
-                result._id = r.upsertedId._id;
-            }
-            res.json(result);
-        })
-        .catch(next);
+    let existed = await UserWord.coll().findOne({userId, word}, {_id: 1});
+    let result = {ok: 1};
+    if (existed) {
+        await UserWord.update(existed._id, newWord);
+    } else {
+        newWord.userId = userId;
+        newWord.word = word;
+        await UserWord.create(newWord);
+        result._id = newWord._id;
+    }
+    res.json(result);
 }
-
-/*function syncVocubulary(req, res, next) {
-    let userId = modelIdString(req.user);
-    if (!userId) {
-        return res.json({ok: 0});
-    }
-    let voca = req.body;
-    if (typeof voca.length === 'undefined'
-        || voca.length === 0
-        || voca.length > 10000) {
-        return res.json({ok: 0});
-    }
-
-    let bulk = [];
-    for (let userWord of voca) {
-        let {word, familiarity} = userWord;
-        if (!word) {
-            continue;
-        }
-        if (!familiarity) {
-            familiarity = 1;
-        }
-        let newWord = {familiarity};
-        for (let attr of ['bookId', 'chapId', 'paraId']) {
-            if (userWord[attr]) {
-                newWord[attr] = userWord[attr];
-            }
-        }
-        let filter = {userId, word};
-        let updater = {
-            '$set': newWord,
-            $currentDate: {updatedAt: true}
-        };
-        let op = {
-            updateOne:
-                {filter: filter, update: updater, upsert: true}
-        };
-        bulk.push(op);
-    }
-    if (bulk.length === 0) {
-        return res.json({ok: 0});
-    }
-    UserWord.coll()
-        .bulkWrite(bulk)
-        .then(r => sendMgResult(res, r))
-        .catch(next);
-}*/
 
 function updateWord(req, res, next) {
     let userId = modelIdString(req.user);
@@ -134,11 +82,61 @@ function removeWord(req, res, next) {
         .catch(next);
 }
 
+async function syncWords(req, res, next) {
+    let userId = modelIdString(req.user);
+    if (!userId) {
+        return res.json({ok: 0});
+    }
+    let userWords = req.body;
+    if (typeof voca.length === 'undefined'
+        || voca.length === 0
+        || voca.length > 5000) {
+        return res.json({ok: 0});
+    }
+
+    for (let userWord of userWords) {
+        let {word, familiarity, removeFlag} = userWord;
+        if (!word) {
+            continue;
+        }
+
+        if (removeFlag === true) {
+            await UserWord.coll().deleteOne({userId, word});
+            continue;
+        }
+
+        let model = {familiarity};
+        for (let attr of ['bookId', 'chapId', 'paraId']) {
+            if (userWord[attr]) {
+                model[attr] = userWord[attr];
+            }
+        }
+
+        let existed = await UserWord.coll().findOne({userId, word}, {_id: 1});
+
+        if (existed) {
+            if (userWord.updatedAt) {
+                model.updatedAt = new Date(userWord.updatedAt);
+            }
+            await UserWord.update(existed._id, model);
+            continue;
+        }
+
+        model.userId = userId;
+        if (userWord.createdAt) {
+            model.createdAt = new Date(userWord.createdAt);
+        }
+        await UserWord.create(model);
+    }
+
+    return res.json({ok: 1});
+}
+
 router.get('/', getAll);
-router.post('/', addWord);
+router.post('/', wrapAsync(addWord));
 router.get('/:word', getOne);
 router.put('/:word', updateWord);
 router.delete('/:word', removeWord);
-// router.post('/sync', syncVocubulary);
+router.post('/sync', wrapAsync(syncWords));
 
 module.exports = router;

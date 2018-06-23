@@ -50,6 +50,9 @@ module.exports.simpleCurd = (collectionName) => {
             return Promise.resolve({ok: 0});
         }
         entity.version = 1;
+        if (!entity.createdAt) {
+            entity.createdAt = new Date();
+        }
         return coll().insertOne(entity);
     }
 
@@ -60,9 +63,11 @@ module.exports.simpleCurd = (collectionName) => {
         if (typeof _id !== 'object') _id = ObjectID(_id);
         let updater = {
             '$set': values,
-            $inc: {version: 1},
-            $currentDate: {updatedAt: true}
+            $inc: {version: 1}
         };
+        if (!values.updatedAt) {
+            updater['$currentDate'] = {updatedAt: true};
+        }
         return coll().updateOne({'_id': _id}, updater);
     }
 

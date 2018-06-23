@@ -12,49 +12,50 @@ async function get(req, res, next) {
 }
 
 
-async function setBaseVocabulary(req, res, next) {
+async function save(req, res, next) {
     let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }
-    let categoryCode = req.body.categoryCode;
-    if (!categoryCode) {
+    let preference = req.body;
+    if (typeof preference !== 'object') {
         return res.json({ok: 0});
     }
-    if (typeof categoryCode !== 'string') {
-        return res.json({ok: 0, message: 'Wrong Parameters.'});
-    }
+    preference.userId = userId;
 
     let up = await UserPreference.coll().findOne({userId});
     if (up) {
-        await UserPreference.update(up._id, {baseVocabulary: categoryCode});
+        await UserPreference.update(up._id, preference);
     } else {
-        await UserPreference.create({userId, baseVocabulary: categoryCode});
+        await UserPreference.create(preference);
     }
 
     res.json({ok: 1});
 }
 
-async function setWordTags(req, res, next) {
+
+async function setValue(req, res, next) {
     let userId = modelIdString(req.user);
     if (!userId) {
         return res.json({ok: 0});
     }
-    let categoryCodes = req.body;
-    if (!categoryCodes) {
+    let preference = req.body;
+    if (typeof preference !== 'object') {
         return res.json({ok: 0});
     }
-    for (let code of categoryCodes) {
-        if (typeof code !== 'string') {
-            return res.json({ok: 0, message: 'Wrong Parameters.'});
-        }
+
+    let code = req.params.code;
+
+    let value = preference[code];
+    if (typeof value === 'undefined') {
+        return res.json({ok: 0});
     }
 
     let up = await UserPreference.coll().findOne({userId});
     if (up) {
-        await UserPreference.update(up._id, {wordTags: categoryCodes});
+        await UserPreference.update(up._id, {[code]: value});
     } else {
-        await UserPreference.create({userId, wordTags: categoryCodes});
+        await UserPreference.create({userId, [code]: value});
     }
 
     res.json({ok: 1});
@@ -62,7 +63,7 @@ async function setWordTags(req, res, next) {
 
 
 router.get('/', wrapAsync(get));
-router.post('/baseVocabulary', wrapAsync(setBaseVocabulary));
-router.post('/wordTags', wrapAsync(setWordTags));
+router.post('/', wrapAsync(save));
+router.post('/code/:code', wrapAsync(setValue));
 
 module.exports = router;
