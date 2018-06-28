@@ -86,6 +86,7 @@ async function chapVersions(req, res, next) {
     const cp = Chap.coll()
         .find({bookId, status: 'R'})
         .project({version: 1})
+        .sort({no: 1})
         .toArray();
     let [book, chaps] = await Promise.all([bp, cp]);
     if (!book) {

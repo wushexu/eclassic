@@ -9,8 +9,12 @@ async function myBooks(req, res, withChaps) {
     if (!userId) {
         return res.json([]);
     }
+    let project = {userId: 0};
+    if(!withChaps){
+        project.chaps = 0;
+    }
     let userBooks = await UserBook
-        .find({userId}, {userId: 0, chaps: withChaps ? 1 : 0});
+        .find({userId}, project);
 
     res.json(userBooks);
 }

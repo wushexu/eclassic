@@ -17,7 +17,7 @@ function getDetail(req, res, next) {
     let gp = AnnotationGroup.coll()
         .find({familyId})
         .sort({no: 1})
-        .project({no: 0})
+        .project()
         .toArray();
 
     Promise.all([fp, gp])

@@ -30,7 +30,8 @@ async function chapDetail(req, res, next) {
     chap.paras = await Para.coll()
         .find({chapId})
         .project({content: 1, trans: 1, no: 1, version: 1})
-        .sort({no: 1}).toArray();
+        .sort({no: 1})
+        .toArray();
 
     res.json(chap);
 }
@@ -51,6 +52,7 @@ async function paraVersions(req, res, next) {
     let paras = await Para.coll()
         .find({chapId})
         .project({version: 1})
+        .sort({no: 1})
         .toArray();
 
     res.json(paras);
