@@ -8,7 +8,7 @@ let {guestBaseForms, guestStem} = require('../dict-setup/lib/word-forms');
 
 async function getEntry(req, res, next) {
 
-    let fields = {word: 1, categories: 1, phonetics: 1, baseForms: 1, forms: 1, simple: 1};
+    let fields = {word: 1, categories: 1, phonetics: 1, baseForm: 1, forms: 1, simple: 1, version: 1};
     if (typeof req.query.complete !== 'undefined') {
         fields.complete = 1;
     }
@@ -29,10 +29,8 @@ async function getEntry(req, res, next) {
     }
     if (entry) {
         if (!entry.simple || entry.simple.length === 0) {
-            let bfs = entry.baseForms;
-            if (bfs && bfs.length === 1 && bfs[0].length <= word.length) {
-                let baseForm = bfs[0];
-                let bfe = await Dict.coll().findOne({word: baseForm}, fields);
+            if (entry.baseForm) {
+                let bfe = await Dict.coll().findOne({word: entry.baseForm}, fields);
                 if (bfe) {
                     entry = bfe;
                 }
@@ -120,7 +118,10 @@ function search(req, res, next) {
         }).catch(next);
 }
 
+// irregular base form
 async function loadBaseForms(req, res, next) {
+
+    console.log('loadBaseForms ....');
     let entries = [];
     let total = 0;
 
@@ -138,43 +139,34 @@ async function loadBaseForms(req, res, next) {
         cetAndBelow.add(w.word);
     }
 
-    // console.log('cetAndBelow size: ' + cetAndBelow.size);
+    console.log('cetAndBelow size: ' + cetAndBelow.size);
 
     Dict.coll().find(
-        {baseForms: {$exists: true}},
-        {_id: 0, word: 1, baseForms: 1}
+        {baseForm: {$exists: true}},
+        {_id: 0, word: 1, baseForm: 1}
     ).forEach(function (entry) {
         total++;
-        let {word, baseForms} = entry;
+        let {word, baseForm} = entry;
 
-        if (!baseForms) {
+        if (!baseForm) {
             return;
         }
 
-        let wordLen = word.length;
-        baseForms = baseForms.filter(form => {
-            if (form.length > wordLen + 2) {
-                return false;
-            }
-            return cetAndBelow.has(form);
-        });
-
-        if (baseForms.length === 0) {
+        if (!cetAndBelow.has(baseForm)) {
+            console.log('> ' + baseForm);
             return;
         }
 
         let bases = guestBaseForms(word);
-        for (let base of bases) {
-            if (baseForms.indexOf(base) >= 0) {
-                return;
-            }
-        }
-        let stem = guestStem(word);
-        if (baseForms.indexOf(stem) >= 0) {
+        if (bases.indexOf(baseForm) >= 0) {
             return;
         }
-        let base = baseForms[0];
-        entries.push([word, base]);
+        let stem = guestStem(word);
+        if (baseForm === stem) {
+            return;
+        }
+
+        entries.push([word, baseForm]);
     }, function (err) {
         console.log('done. total: ' + total + ', forms: ' + entries.length);
         res.json(entries);

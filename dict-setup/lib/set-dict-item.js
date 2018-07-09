@@ -72,6 +72,44 @@ function setPhonetics(dictItem, phonetics) {
     }
 }
 
+function setBaseForm(dictItem) {
+    let {word, baseForms} = dictItem;
+    if (!baseForms) {
+        return;
+    }
+    const len = baseForms.length;
+    if (len === 0) {
+        return;
+    }
+
+    if (len === 1) {
+        let bf = baseForms[0];
+        if (bf.length > word.length + 2) {
+            return;
+        }
+        dictItem.baseForm = bf;
+        return;
+    }
+
+    baseForms = baseForms.sort((a, b) => a.length - b.length);
+
+    let bf0 = baseForms[0];
+    if (baseForms.every(bf => bf.startsWith(bf0))) {
+        dictItem.baseForm = bf0;
+        return;
+    }
+
+    baseForms = baseForms.filter(bf => !bf.endsWith('ing'));
+    if (baseForms.length === 0) {
+        return;
+    }
+
+    bf0 = baseForms[0];
+    if (baseForms.every(bf => bf.startsWith(bf0))) {
+        dictItem.baseForm = bf0;
+    }
+}
+
 function mergeDictItems(dictItemHc, dictItemYd) {
     if (!dictItemHc || !dictItemHc.simple) {
         return dictItemYd;
@@ -100,6 +138,8 @@ function mergeDictItems(dictItemHc, dictItemYd) {
     let wordCount = word.split(' ').length;
     dictItem.wordCount = wordCount;
     dictItem.isPhrase = wordCount > 1;
+
+    setBaseForm(dictItem);
 
     return dictItem;
 }

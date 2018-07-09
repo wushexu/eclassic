@@ -80,7 +80,7 @@ function search(req, res, next) {
 function index(req, res, next) {
 
     let p = Dict.coll().find()
-        .project({word: 1, categories: 1, baseForms: 1});
+        .project({word: 1, categories: 1, baseForm: 1});
     let from = req.query['from'];
     if (from) {
         from = parseInt(from) || 1;
@@ -112,10 +112,8 @@ async function showAsync(req, res, next) {
     }
     if (entry) {
         if (!entry.simple || entry.simple.length === 0) {
-            let bfs = entry.baseForms;
-            if (bfs && bfs.length === 1 && bfs[0].length <= word.length) {
-                let baseForm = bfs[0];
-                let bfe = await Dict.coll().findOne({word: baseForm}, fields);
+            if (entry.baseForm) {
+                let bfe = await Dict.coll().findOne({word: entry.baseForm}, fields);
                 if (bfe) {
                     entry = bfe;
                 }
@@ -211,7 +209,7 @@ async function loadAWord(word) {
 }
 
 async function getBasicAsync(req, res, next) {
-    let fields = {_id: 0, word: 1, categories: 1, baseForms: 1};
+    let fields = {_id: 0, word: 1, categories: 1, baseForm: 1};
 
     let loadId = typeof req.query._id !== 'undefined';
     if (loadId) {
@@ -230,7 +228,7 @@ async function getBasicAsync(req, res, next) {
             entry = {
                 word,
                 categories: odi.categories,
-                baseForms: odi.baseForms
+                baseForm: odi.baseForm
             };
             if (loadId) {
                 entry._id = odi._id;
@@ -259,52 +257,10 @@ function updateCategories(req, res, next) {
     }).catch(next);
 }
 
-function loadBaseFormsAll(req, res, next) {
-    let entries = [];
-    let total = 0;
-
-    Dict.coll().find(
-        {baseForms: {$exists: true}},
-        {_id: 0, word: 1, baseForms: 1}
-    ).forEach(function (entry) {
-        total++;
-        let {word, baseForms} = entry;
-
-        if (!baseForms) {
-            return;
-        }
-
-        let wordLen = word.length;
-        baseForms = baseForms.filter(form => form.length <= wordLen + 2);
-
-        if (baseForms.length === 0) {
-            return;
-        }
-
-        let bases = guestBaseForms(word);
-        for (let base of bases) {
-            if (baseForms.indexOf(base) >= 0) {
-                return;
-            }
-        }
-        let stem = guestStem(word);
-        if (baseForms.indexOf(stem) >= 0) {
-            return;
-        }
-        let base = baseForms[0];
-        entries.push([word, base]);
-    }, function (err) {
-        console.log('done. total: ' + total + ', forms: ' + entries.length);
-        res.json(entries);
-    });
-}
-
-
 router.get('/search/:key', search);
 router.get('/:word/basic', wrapAsync(getBasicAsync));
 router.get('/:word/categories', wrapAsync(getCategories));
 router.patch('/:word/categories', updateCategories);
-router.post('/loadBaseFormsAll', loadBaseFormsAll);
 
 let [show, create, update, destroy] =
     wrapAsyncs(showAsync, createAsync, updateAsync, destroyAsync);
