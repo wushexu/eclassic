@@ -36,6 +36,10 @@ async function addWord(req, res, next) {
         return res.json({ok: 0});
     }
 
+    if (typeof familiarity !== "number") {
+        familiarity = parseInt(familiarity);
+    }
+
     let newWord = {bookId, chapId, paraId, familiarity};
 
     let existed = await UserWord.coll().findOne({userId, word}, {_id: 1});
@@ -60,6 +64,10 @@ function updateWord(req, res, next) {
     let {familiarity} = req.body;
     if (!familiarity) {
         return res.json({ok: 0});
+    }
+
+    if (typeof familiarity !== "number") {
+        familiarity = parseInt(familiarity);
     }
     let updater = {
         '$set': {familiarity},
