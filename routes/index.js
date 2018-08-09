@@ -18,7 +18,7 @@ async function resetPass(req, res, next) {
         res.json({ok: 0, message: 'Missing New Pass'});
     }
     let pass = reqParam(req, 'pass');
-    await match = User.checkPass(user, pass);
+    match = await User.checkPass(user, pass);
     if (!match) {
         res.json({ok: 0, message: 'Wrong Pass'});
     }

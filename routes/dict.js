@@ -121,7 +121,6 @@ function search(req, res, next) {
 // irregular base form
 async function loadBaseForms(req, res, next) {
 
-    console.log('loadBaseForms ....');
     let entries = [];
     let total = 0;
 
@@ -153,7 +152,6 @@ async function loadBaseForms(req, res, next) {
         }
 
         if (!cetAndBelow.has(baseForm)) {
-            console.log('> ' + baseForm);
             return;
         }
 
