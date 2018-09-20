@@ -1,6 +1,7 @@
 let express = require('express');
 const {errorHandler} = require('./common/helper');
 
+let register = require('./routes/register');
 let login = require('./routes/login');
 let books = require('./routes/books');
 let chaps = require('./routes/chaps');
@@ -17,7 +18,7 @@ function authorize(req, res, next) {
         return next();
     }
     let url = req.url;
-    if (url.startsWith('/login')) {
+    if (url.startsWith('/register') || url.startsWith('/login')) {
         return next();
     }
 
@@ -42,6 +43,7 @@ function authorize(req, res, next) {
 let api = express();
 
 api.use(authorize);
+api.use('/register', register);
 api.use('/login', login);
 api.use('/books', books);
 api.use('/chaps', chaps);

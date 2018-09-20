@@ -1,8 +1,8 @@
 let express = require('express');
 let router = express.Router();
 
-let UserPreference = require('../models/user_preference');
 let {wrapAsync, modelIdString} = require('../common/helper');
+let UserPreference = require('../models/user_preference');
 
 
 async function get(req, res, next) {

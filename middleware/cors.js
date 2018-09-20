@@ -16,13 +16,17 @@ module.exports = (req, res, next) => {
         next();
         return;
     }
-    if (ip === '127.0.0.1'
-        || ip === '::1'
-        || ip === '::ffff:127.0.0.1'
+    if (
+        ip === '127.0.0.1'
         || ip.startsWith('192.')
-        || ip.startsWith('::ffff:192.')
-    //|| ip.startsWith('10.')
-    //|| ip.startsWith('::ffff:10.')
+        || ip.startsWith('10.')
+        || req.app.get('env') === 'development'
+        || (ip.startsWith('::') && (
+            ip === '::1'
+            || ip === '::ffff:127.0.0.1'
+            || ip.startsWith('::ffff:192.')
+            || ip.startsWith('::ffff:10.')
+        ))
     ) {
         let origin = req.headers['origin']/* || 'http://localhost:4200'*/;
         res.set('Access-Control-Allow-Origin', origin);

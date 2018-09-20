@@ -37,11 +37,11 @@ function createRecords() {
     addCategory('junior', 1, 'junior1', '初级');
     addCategory('junior', 2, 'junior2', '中级', 'junior1');
     addCategory('junior', 0, 'basic', '基础');
-    addCategory('cet', 4, 'cet4', 'CET4', 'junior2');
+    addCategory('cet', 4, 'cet4', 'CET4', 'basic');
     addCategory('cet', 6, 'cet6', 'CET6', 'cet4');
     addCategory('cet', 0, 'cet', 'CET');
-    addCategory('gre', 1, 'gre', 'GRE', 'junior2');
-    addCategory('yasi', 1, 'yasi', '雅思', 'junior2');
+    addCategory('gre', 1, 'gre', 'GRE', 'basic');
+    addCategory('yasi', 1, 'yasi', '雅思', 'basic');
     addCategory('pro', 1, 'pro', '专英', 'cet6');
     // addCategory('haici', 5, 'haici5', '海词5星');
     // addCategory('haici', 4, 'haici4', '海词4星', 'haici5');
@@ -49,9 +49,9 @@ function createRecords() {
     // addCategory('haici', 2, 'haici2', '海词2星', 'haici3');
     // addCategory('haici', 1, 'haici1', '海词1星', 'haici2');
     addCategory('haici', 0, 'haici', '海词');
-    addCategory('coca', 0, 'coca', '当代美国英语语料库');
-    addCategory('bnc', 0, 'bnc', '英国国家语料库');
-    addCategory('anc', 0, 'anc', '美国国家语料库');
+    addCategory('coca', 0, 'coca', 'COCA');//当代美国英语语料库
+    addCategory('bnc', 0, 'bnc', 'BNC');//英国国家语料库
+    addCategory('anc', 0, 'anc', 'ANC');//美国国家语料库
 
     let bulkOperations = categories.map(cat => {
         return {insertOne: {document: cat}};

@@ -3,7 +3,7 @@ const {simpleCurd} = require('./db');
 let WordCategory = simpleCurd('word_categories');
 
 let requiredFields = ['code', 'name', 'dictKey'],
-    updateFields = ['dictOperator', 'dictValue', 'description', 'wordCount', 'extendTo',
+    updateFields = ['name', 'dictOperator', 'dictValue', 'description', 'wordCount', 'extendTo',
         'extendedWordCount', 'no'],
     createFields = updateFields.concat(requiredFields);
 
